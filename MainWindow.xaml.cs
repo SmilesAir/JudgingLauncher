@@ -19,6 +19,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using System.Windows.Threading;
 using ZXing;
 using ZXing.QrCode;
 
@@ -41,23 +42,31 @@ namespace JudgingLauncher
 
 		const string dataFolderPath = "JudgingeLauncherData";
 		const string nodejsInstallerFilename = "node-v12.13.1-x64.msi";
-		public string ClientOutputText
+		public ObservableCollection<string> ServerOptions
 		{
-			get { return clientOutputText; }
+			get { return serverOptions; }
 			set
 			{
-				clientOutputText = value;
-
-				const int maxLen = 10000;
-				if (clientOutputText.Length > maxLen)
-				{
-					clientOutputText = clientOutputText.Substring(clientOutputText.Length - maxLen);
-				}
-
-				ClientOutputTextbox.ScrollToEnd();
+				serverOptions = value;
+				OnPropertyChanged("ServerOptions");
 			}
 		}
-		string clientOutputText = "";
+		ObservableCollection<string> serverOptions = new ObservableCollection<string>() { "Localhost", "Local Server", "Internet" };
+		public string ServerSelectedItem
+		{
+			get { return serverSelectedItem; }
+			set
+			{
+				serverSelectedItem = value;
+				OnPropertyChanged("ServerSelectedItem");
+
+				Properties.Settings.Default.ServerSelectedItem = value;
+				Properties.Settings.Default.Save();
+
+				SetupLinks();
+			}
+		}
+		string serverSelectedItem = "";
 		public ObservableCollection<string> LanModeOptions
 		{
 			get { return lanModeOptions; }
@@ -78,6 +87,8 @@ namespace JudgingLauncher
 
 				Properties.Settings.Default.LanModeSelectedItem = value;
 				Properties.Settings.Default.Save();
+
+				SetupLinks();
 			}
 		}
 		string lanModeSelectedItem = "";
@@ -102,19 +113,12 @@ namespace JudgingLauncher
 
 				Properties.Settings.Default.JudgeCountSelectedItem = value;
 				Properties.Settings.Default.Save();
+
+				SetupLinks();
 			}
 		}
 		string judgeCountSelectedItem = "";
-		public BitmapImage QrCodeImage0
-		{
-			get { return qrCodeImage0; }
-			set
-			{
-				qrCodeImage0 = value;
-				OnPropertyChanged("QrCodeImage0");
-			}
-		}
-		BitmapImage qrCodeImage0 = new BitmapImage();
+		List<JudgeLinkObjects> judgeLinkObjects = new List<JudgeLinkObjects>();
 
 
 		public string TournamentName
@@ -128,12 +132,34 @@ namespace JudgingLauncher
 
 				Properties.Settings.Default.TournamentName = tournamentName;
 				Properties.Settings.Default.Save();
+
+				SetupLinks();
 			}
 		}
 		string tournamentName = "";
 
-		Thread clientThread;
 		Process clientProcess;
+		public string ClientOutputText
+		{
+			get { return clientOutputText; }
+			set
+			{
+				clientOutputText = value;
+
+				const int maxLen = 10000;
+				if (clientOutputText.Length > maxLen)
+				{
+					clientOutputText = clientOutputText.Substring(clientOutputText.Length - maxLen);
+				}
+
+				OnPropertyChanged("ClientOutputText");
+
+				ClientOutputTextbox.ScrollToEnd();
+			}
+		}
+		string clientOutputText = "";
+		DispatcherTimer clientLogTimer = new DispatcherTimer();
+
 		public string ServerOutputText
 		{
 			get { return serverOutputText; }
@@ -147,12 +173,14 @@ namespace JudgingLauncher
 					serverOutputText = serverOutputText.Substring(serverOutputText.Length - maxLen);
 				}
 
+				OnPropertyChanged("ServerOutputText");
+
 				ServerOutputTextbox.ScrollToEnd();
 			}
 		}
 		string serverOutputText = "";
-		Thread serverThread;
 		Process serverProcess;
+		DispatcherTimer serverLogTimer = new DispatcherTimer();
 
 		public MainWindow()
 		{
@@ -178,12 +206,21 @@ namespace JudgingLauncher
 				}
 			}
 
+			ServerSelectedItem = Properties.Settings.Default.ServerSelectedItem;
 			LanModeSelectedItem = Properties.Settings.Default.LanModeSelectedItem;
-
 			JudgeCountSelectedItem = Properties.Settings.Default.JudgeCountSelectedItem;
 
-			SetupLinkButtons();
-			SetupQrCodes();
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton0, QrCodeImage0, QrCodeLabel0));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton1, QrCodeImage1, QrCodeLabel1));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton2, QrCodeImage2, QrCodeLabel2));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton3, QrCodeImage3, QrCodeLabel3));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton4, QrCodeImage4, QrCodeLabel4));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton5, QrCodeImage5, QrCodeLabel5));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton6, QrCodeImage6, QrCodeLabel6));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton7, QrCodeImage7, QrCodeLabel7));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton8, QrCodeImage8, QrCodeLabel8));
+
+			SetupLinks();
 		}
 
 		private void SafeDirectoryDelete(string path)
@@ -295,100 +332,86 @@ namespace JudgingLauncher
 
 		private void StartClient()
 		{
-			clientThread = new Thread((() =>
+			clientProcess = new Process();
+			clientProcess.StartInfo.FileName = "cmd";
+			clientProcess.StartInfo.RedirectStandardInput = true;
+			clientProcess.StartInfo.RedirectStandardOutput = true;
+			clientProcess.StartInfo.CreateNoWindow = true;
+			clientProcess.StartInfo.UseShellExecute = false;
+			clientProcess.Start();
+			clientProcess.BeginOutputReadLine();
+
+			string cd = "cd " + Path.Combine(dataFolderPath, "Depot", "client");
+			clientProcess.StandardInput.WriteLine(cd);
+
+			clientProcess.StandardInput.WriteLine("npm start");
+
+			clientProcess.StandardInput.Flush();
+			clientProcess.StandardInput.Close();
+
+			string newText = "";
+			clientProcess.OutputDataReceived += (object sender, DataReceivedEventArgs e) =>
 			{
-				clientProcess = new Process();
-				clientProcess.StartInfo.FileName = "cmd";
-				clientProcess.StartInfo.RedirectStandardInput = true;
-				clientProcess.StartInfo.RedirectStandardOutput = true;
-				clientProcess.StartInfo.CreateNoWindow = true;
-				clientProcess.StartInfo.UseShellExecute = false;
-				clientProcess.Start();
-				clientProcess.BeginOutputReadLine();
+				newText += e.Data + "\r\n";
+			};
 
-				string cd = "cd " + Path.Combine(dataFolderPath, "Depot", "client");
-				clientProcess.StandardInput.WriteLine(cd);
-
-				clientProcess.StandardInput.WriteLine("npm start");
-
-				clientProcess.StandardInput.Flush();
-				clientProcess.StandardInput.Close();
-
-				string newText = "";
-				clientProcess.OutputDataReceived += (object sender, DataReceivedEventArgs e) =>
+			clientLogTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+			clientLogTimer.Tick += (object sender, EventArgs e) =>
+			{
+				if (Application.Current != null && newText.Length > 0)
 				{
-					newText += e.Data + "\r\n";
-				};
-
-				DateTime lastClientOutputUpdateTime = DateTime.Now;
-				while (true)
-				{
-					if (newText.Length > 0 && (DateTime.Now - lastClientOutputUpdateTime).TotalMilliseconds > 100)
-					{
-						if (Application.Current != null)
+					Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
+						new Action(() =>
 						{
-							Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
-							new Action(() =>
-							{
-								ClientOutputText += newText;
-								newText = "";
-								OnPropertyChanged("ClientOutputText");
-							}));
-						}
-					}
+							ClientOutputText += newText;
+							newText = "";
+						}));
 				}
-			}));
-
-			clientThread.Start();
+			};
+			clientLogTimer.Start();
 		}
 
 		private void StartLocalServer()
 		{
-			serverThread = new Thread((() =>
+			serverProcess = new Process();
+			serverProcess.StartInfo.FileName = "cmd";
+			serverProcess.StartInfo.RedirectStandardInput = true;
+			serverProcess.StartInfo.RedirectStandardOutput = true;
+			serverProcess.StartInfo.CreateNoWindow = true;
+			serverProcess.StartInfo.UseShellExecute = false;
+			serverProcess.Start();
+			serverProcess.BeginOutputReadLine();
+
+			string cd = "cd " + Path.Combine(dataFolderPath, "Depot", "server");
+			serverProcess.StandardInput.WriteLine(cd);
+
+			serverProcess.StandardInput.WriteLine("npm start");
+
+			serverProcess.StandardInput.Flush();
+			serverProcess.StandardInput.Close();
+
+			string newText = "";
+			serverProcess.OutputDataReceived += (object sender, DataReceivedEventArgs e) =>
 			{
-				serverProcess = new Process();
-				serverProcess.StartInfo.FileName = "cmd";
-				serverProcess.StartInfo.RedirectStandardInput = true;
-				serverProcess.StartInfo.RedirectStandardOutput = true;
-				serverProcess.StartInfo.CreateNoWindow = true;
-				serverProcess.StartInfo.UseShellExecute = false;
-				serverProcess.Start();
-				serverProcess.BeginOutputReadLine();
+				newText += e.Data + "\r\n";
+			};
 
-				string cd = "cd " + Path.Combine(dataFolderPath, "Depot", "server");
-				serverProcess.StandardInput.WriteLine(cd);
 
-				serverProcess.StandardInput.WriteLine("npm start");
-
-				serverProcess.StandardInput.Flush();
-				serverProcess.StandardInput.Close();
-
-				string newText = "";
-				serverProcess.OutputDataReceived += (object sender, DataReceivedEventArgs e) =>
+			serverLogTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+			serverLogTimer.Tick += (object sender, EventArgs e) =>
+			{
+				if (Application.Current != null && newText.Length > 0)
 				{
-					newText += e.Data + "\r\n";
-				};
-
-				DateTime lastserverOutputUpdateTime = DateTime.Now;
-				while (true)
-				{
-					if (newText.Length > 0 && (DateTime.Now - lastserverOutputUpdateTime).TotalMilliseconds > 100)
-					{
-						if (Application.Current != null)
+					Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
+						new Action(() =>
 						{
-							Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
-								new Action(() =>
-								{
-									ServerOutputText += newText;
-									newText = "";
-									OnPropertyChanged("ServerOutputText");
-								}));
-						}
-					}
+							ServerOutputText += newText;
+							newText = "";
+							OnPropertyChanged("ServerOutputText");
+						}));
 				}
-			}));
-
-			serverThread.Start();
+			};
+			serverLogTimer.Start();
 		}
 
 		private void LaunchButton_Click(object sender, RoutedEventArgs e)
@@ -419,19 +442,17 @@ namespace JudgingLauncher
 			if (clientProcess != null)
 			{
 				clientProcess.Close();
-				clientThread.Abort();
 			}
 
 			if (serverProcess != null)
 			{
 				serverProcess.Close();
-				serverThread.Abort();
 			}
 		}
 
 		private void Window_Closing(object sender, CancelEventArgs e)
 		{
-			KillAllNodeProcesses();
+			KillAllProcesses();
 		}
 
 		private void InstallNodeButton_Click(object sender, RoutedEventArgs e)
@@ -447,21 +468,24 @@ namespace JudgingLauncher
 		private string GetLink(string interfaceName, string judgeIndex)
 		{
 			string url = "";
-			if (LocalhostRadio.IsChecked == true)
+			if (ServerSelectedItem == "Localhost")
 			{
 				url = "http://localhost:8080/index.html";
 			}
-			else if (LocalServerRadio.IsChecked == true)
+			else if (ServerSelectedItem == "Local Server")
 			{
-				url = "http://" + LanModeSelectedItem + "/index.html";
+				url = "http://" + LanModeSelectedItem + ":8080/index.html";
 			}
-			else if (InternetProductionRadio.IsChecked == true)
+			else if (ServerSelectedItem == "Internet")
 			{
-				url = "https://d5rsjgoyn07f8.cloudfront.net/index.html";
-			}
-			else if (InternetProductionRadio.IsChecked == true)
-			{
-				url = "https://d27wqtus28jqqk.cloudfront.net/index.html";
+				if (false)
+				{
+					url = "https://d5rsjgoyn07f8.cloudfront.net/index.html";
+				}
+				else
+				{
+					url = "https://d27wqtus28jqqk.cloudfront.net/index.html";
+				}
 			}
 
 			url += "?startup=" + interfaceName + "&tournamentName=" + TournamentName;
@@ -473,50 +497,85 @@ namespace JudgingLauncher
 
 		private void LinkButton_Click(object sender, RoutedEventArgs e)
 		{
-			List<string> interfaceNameMap = new List<string>()
-			{
-				"info",
-				"head",
-				"scoreboard"
-			};
-
-			if (JudgeCountSelectedItem == "6")
-			{
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("exAi");
-				interfaceNameMap.Add("exAi");
-			}
-
 			Button senderButton = sender as Button;
-			int tagNum = int.Parse(senderButton.Tag as string);
-			string judgeIndex = tagNum > 2 ? (tagNum - 2).ToString() : "";
-			Clipboard.SetText(GetLink(interfaceNameMap[tagNum], judgeIndex));
+			Clipboard.SetText(senderButton.Tag as string);
 		}
 
-		private void SetupLinkButtons()
+		private void SetupLinks()
 		{
-			if (JudgeCountSelectedItem == "6")
+			int judgeCount;
+			if (!int.TryParse(JudgeCountSelectedItem, out judgeCount))
 			{
-				LinkButton0.Visibility = Visibility.Visible;
-				LinkButton0.Content = "Diff 1";
-				LinkButton1.Visibility = Visibility.Visible;
-				LinkButton1.Content = "Diff 2";
-				LinkButton2.Visibility = Visibility.Visible;
-				LinkButton2.Content = "Variety 1";
-				LinkButton3.Visibility = Visibility.Visible;
-				LinkButton3.Content = "Variety 2";
-				LinkButton4.Visibility = Visibility.Visible;
-				LinkButton4.Content = "Ex/Ai 1";
-				LinkButton5.Visibility = Visibility.Visible;
-				LinkButton5.Content = "Ex/Ai 2";
+				return;
 			}
-		}
 
-		private void SetupQrCodes()
-		{
+			if (judgeCount > judgeLinkObjects.Count)
+			{
+				return;
+			}
+
+			foreach (JudgeLinkObjects obj in judgeLinkObjects)
+			{
+				obj.linkButton.Visibility = Visibility.Collapsed;
+				obj.qrCodeImage.Visibility = Visibility.Collapsed;
+				obj.qrCodeLabel.Visibility = Visibility.Collapsed;
+			}
+
+			List<string> interfaceNameMap = new List<string>();
+
+			if (judgeCount == 3)
+			{
+				interfaceNameMap.Add("diff");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("exAi");
+
+				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Diff 1";
+				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton2.Content = "Variety 1";
+				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton4.Content = "Ex/Ai 1";
+			}
+			else if (judgeCount == 6)
+			{
+				interfaceNameMap.Add("diff");
+				interfaceNameMap.Add("diff");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("exAi");
+				interfaceNameMap.Add("exAi");
+
+				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Diff 1";
+				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton1.Content = "Diff 2";
+				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton2.Content = "Variety 1";
+				judgeLinkObjects[3].qrCodeLabel.Content = LinkButton3.Content = "Variety 2";
+				judgeLinkObjects[4].qrCodeLabel.Content = LinkButton4.Content = "Ex/Ai 1";
+				judgeLinkObjects[5].qrCodeLabel.Content = LinkButton5.Content = "Ex/Ai 2";
+			}
+			else if (judgeCount == 9)
+			{
+				interfaceNameMap.Add("diff");
+				interfaceNameMap.Add("diff");
+				interfaceNameMap.Add("diff");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("exAi");
+				interfaceNameMap.Add("exAi");
+				interfaceNameMap.Add("exAi");
+
+				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Diff 1";
+				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton1.Content = "Diff 2";
+				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton2.Content = "Diff 3";
+				judgeLinkObjects[3].qrCodeLabel.Content = LinkButton3.Content = "Variety 1";
+				judgeLinkObjects[4].qrCodeLabel.Content = LinkButton4.Content = "Variety 2";
+				judgeLinkObjects[5].qrCodeLabel.Content = LinkButton5.Content = "Variety 3";
+				judgeLinkObjects[6].qrCodeLabel.Content = LinkButton6.Content = "Ex/Ai 1";
+				judgeLinkObjects[7].qrCodeLabel.Content = LinkButton7.Content = "Ex/Ai 2";
+				judgeLinkObjects[8].qrCodeLabel.Content = LinkButton8.Content = "Ex/Ai 3";
+			}
+
+			LinkButtonInfo.Tag = GetLink("info", "");
+			LinkButtonHead.Tag = GetLink("head", "");
+			LinkButtonScoreboard.Tag = GetLink("scoreboard", "");
+
 			QRCodeWriter qrCode = new QRCodeWriter();
 			BarcodeWriter barcodeWriter = new BarcodeWriter
 			{
@@ -529,25 +588,46 @@ namespace JudgingLauncher
 				}
 			};
 
-			using (var bitmap = barcodeWriter.Write("test"))
-			using (var stream = new MemoryStream())
+			for (int i = 0; i < judgeCount; ++i)
 			{
-				bitmap.Save(stream, ImageFormat.Png);
+				string link = GetLink(interfaceNameMap[i], "");
+				judgeLinkObjects[i].linkButton.Tag = link;
+				judgeLinkObjects[i].linkButton.Visibility = Visibility.Visible;
+				judgeLinkObjects[i].qrCodeImage.Visibility = Visibility.Visible;
+				judgeLinkObjects[i].qrCodeLabel.Visibility = Visibility.Visible;
 
-				BitmapImage bi = new BitmapImage();
-				bi.BeginInit();
-				stream.Seek(0, SeekOrigin.Begin);
-				bi.StreamSource = stream;
-				bi.CacheOption = BitmapCacheOption.OnLoad;
-				bi.EndInit();
-				QrCodeImage0 = bi;
+				using (var bitmap = barcodeWriter.Write(link))
+				using (var stream = new MemoryStream())
+				{
+					bitmap.Save(stream, ImageFormat.Png);
+
+					BitmapImage bi = new BitmapImage();
+					bi.BeginInit();
+					stream.Seek(0, SeekOrigin.Begin);
+					bi.StreamSource = stream;
+					bi.CacheOption = BitmapCacheOption.OnLoad;
+					bi.EndInit();
+					judgeLinkObjects[i].qrCodeImage.Source = bi;
+				}
 			}
 		}
-
-		private void JudgeCountComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			SetupLinkButtons();
-			SetupQrCodes();
-		}
 	}
+
+	public class JudgeLinkObjects
+	{
+		public Button linkButton = null;
+		public Image qrCodeImage = null;
+		public Label qrCodeLabel = null;
+
+		public JudgeLinkObjects()
+		{
+		}
+
+		public JudgeLinkObjects(Button button, Image image, Label label)
+		{
+			linkButton = button;
+			qrCodeImage = image;
+			qrCodeLabel = label;
+		}
+	};
 }

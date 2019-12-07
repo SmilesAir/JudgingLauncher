@@ -15,6 +15,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Grid>
@@ -27,35 +28,27 @@
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
-                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto" MinHeight="40"/>
                         </Grid.RowDefinitions>
 
                         <Label Content="Tournament Name"/>
                         <TextBox Grid.Column="1" VerticalContentAlignment="Center" Text="{Binding TournamentName, UpdateSourceTrigger=PropertyChanged}"/>
 
                         <Label Grid.Row="1" Content="Server"/>
-                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <StackPanel.Resources>
-                                <Style TargetType="{x:Type RadioButton}">
-                                    <Setter Property="Margin" Value="0, 0, 15, 0"/>
-                                </Style>
-                            </StackPanel.Resources>
-                            <RadioButton Name="LocalhostRadio" GroupName="Server" Content="Localhost" IsChecked="True"/>
-                            <RadioButton Name="LocalServerRadio" GroupName="Server" Content="Local Server"/>
-                            <RadioButton Name="InternetProductionRadio" GroupName="Server" Content="Internet Production"/>
-                            <RadioButton Name="InternetDevelopmentRadio" GroupName="Server" Content="Internet Development"/>
-                        </StackPanel>
+                        <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding ServerOptions}" SelectedItem="{Binding ServerSelectedItem}"/>
                         
                         <Label Grid.Row="2" Content="LAN Mode"/>
                         <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding LanModeOptions}" SelectedItem="{Binding LanModeSelectedItem}"/>
 
                         <Label Grid.Row="3" Content="Judges Count"/>
-                        <ComboBox Grid.Row="3" Grid.Column="1" SelectionChanged="JudgeCountComboBox_SelectionChanged" ItemsSource="{Binding JudgeCountOptions}" SelectedItem="{Binding JudgeCountSelectedItem}"/>
+                        <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding JudgeCountOptions}" SelectedItem="{Binding JudgeCountSelectedItem}"/>
 
                         <Button Grid.Row="4" Grid.ColumnSpan="2" Click="LaunchButton_Click" Content="Launch"/>
                     </Grid>
 
-                    <Grid Grid.Row="1">
+                    <Label Grid.Row="1" Content="Copy Links To Clipboard Below" HorizontalContentAlignment="Center"/>
+
+                    <Grid Grid.Row="2">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
@@ -68,25 +61,25 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Button Grid.Row="0" Grid.Column="0" Tag="0" Content="Info" Click="LinkButton_Click"/>
-                        <Button Grid.Row="0" Grid.Column="1" Tag="1" Content="Head Judge" Click="LinkButton_Click"/>
-                        <Button Grid.Row="0" Grid.Column="2" Tag="2" Content="Scoreboard" Click="LinkButton_Click"/>
+                        <Button Grid.Row="0" Grid.Column="0" Name="LinkButtonInfo" Content="Info" Click="LinkButton_Click"/>
+                        <Button Grid.Row="0" Grid.Column="1" Name="LinkButtonHead" Content="Head Judge" Click="LinkButton_Click"/>
+                        <Button Grid.Row="0" Grid.Column="2" Name="LinkButtonScoreboard" Content="Scoreboard" Click="LinkButton_Click"/>
 
-                        <Button Grid.Row="1" Grid.Column="0" Name="LinkButton0" Tag="3" Visibility="Hidden" Click="LinkButton_Click"/>
-                        <Button Grid.Row="1" Grid.Column="1" Name="LinkButton1" Tag="4" Visibility="Hidden" Click="LinkButton_Click"/>
-                        <Button Grid.Row="1" Grid.Column="2" Name="LinkButton2" Tag="5" Visibility="Hidden" Click="LinkButton_Click"/>
-
-                        <Button Grid.Row="2" Grid.Column="0" Name="LinkButton3" Tag="6" Visibility="Hidden" Click="LinkButton_Click"/>
-                        <Button Grid.Row="2" Grid.Column="1" Name="LinkButton4" Tag="7" Visibility="Hidden" Click="LinkButton_Click"/>
-                        <Button Grid.Row="2" Grid.Column="2" Name="LinkButton5" Tag="8" Visibility="Hidden" Click="LinkButton_Click"/>
-
-                        <Button Grid.Row="3" Grid.Column="0" Name="LinkButton6" Tag="9" Visibility="Hidden" Click="LinkButton_Click"/>
-                        <Button Grid.Row="3" Grid.Column="1" Name="LinkButton7" Tag="10" Visibility="Hidden" Click="LinkButton_Click"/>
-                        <Button Grid.Row="3" Grid.Column="2" Name="LinkButton8" Tag="11" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="1" Grid.Column="0" Name="LinkButton0" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="1" Grid.Column="1" Name="LinkButton1" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="1" Grid.Column="2" Name="LinkButton2" Visibility="Hidden" Click="LinkButton_Click"/>
+                                                                                
+                        <Button Grid.Row="2" Grid.Column="0" Name="LinkButton3" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="2" Grid.Column="1" Name="LinkButton4" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="2" Grid.Column="2" Name="LinkButton5" Visibility="Hidden" Click="LinkButton_Click"/>
+                                                                                
+                        <Button Grid.Row="3" Grid.Column="0" Name="LinkButton6" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="3" Grid.Column="1" Name="LinkButton7"  Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="3" Grid.Column="2" Name="LinkButton8"  Visibility="Hidden" Click="LinkButton_Click"/>
 
                     </Grid>
 
-                    <Grid Grid.Row="2">
+                    <Grid Grid.Row="3">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
@@ -99,12 +92,15 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Header="QR Codes" IsSelected="True">
+            <TabItem Header="QR Codes">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -112,7 +108,25 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Image Grid.Row="0" Grid.Column="0" Source="{Binding QrCodeImage0}"/>
+                    <Image Grid.Row="0" Grid.Column="0" Name="QrCodeImage0"/>
+                    <Image Grid.Row="0" Grid.Column="1" Name="QrCodeImage1"/>
+                    <Image Grid.Row="0" Grid.Column="2" Name="QrCodeImage2"/>
+                    <Image Grid.Row="2" Grid.Column="0" Name="QrCodeImage3"/>
+                    <Image Grid.Row="2" Grid.Column="1" Name="QrCodeImage4"/>
+                    <Image Grid.Row="2" Grid.Column="2" Name="QrCodeImage5"/>
+                    <Image Grid.Row="4" Grid.Column="0" Name="QrCodeImage6"/>
+                    <Image Grid.Row="4" Grid.Column="1" Name="QrCodeImage7"/>
+                    <Image Grid.Row="4" Grid.Column="2" Name="QrCodeImage8"/>
+
+                    <Label Grid.Row="1" Grid.Column="0" Name="QrCodeLabel0" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                    <Label Grid.Row="1" Grid.Column="1" Name="QrCodeLabel1" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                    <Label Grid.Row="1" Grid.Column="2" Name="QrCodeLabel2" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                    <Label Grid.Row="3" Grid.Column="0" Name="QrCodeLabel3" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                    <Label Grid.Row="3" Grid.Column="1" Name="QrCodeLabel4" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                    <Label Grid.Row="3" Grid.Column="2" Name="QrCodeLabel5" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                    <Label Grid.Row="5" Grid.Column="0" Name="QrCodeLabel6" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                    <Label Grid.Row="5" Grid.Column="1" Name="QrCodeLabel7" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                    <Label Grid.Row="5" Grid.Column="2" Name="QrCodeLabel8" FontWeight="Bold" HorizontalContentAlignment="Center"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Setup">

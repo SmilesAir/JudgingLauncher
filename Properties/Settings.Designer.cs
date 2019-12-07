@@ -58,5 +58,17 @@ namespace JudgingLauncher.Properties {
                 this["JudgeCountSelectedItem"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Localhost")]
+        public string ServerSelectedItem {
+            get {
+                return ((string)(this["ServerSelectedItem"]));
+            }
+            set {
+                this["ServerSelectedItem"] = value;
+            }
+        }
     }
 }

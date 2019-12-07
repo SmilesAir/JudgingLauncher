@@ -11,5 +11,8 @@
     <Setting Name="JudgeCountSelectedItem" Type="System.String" Scope="User">
       <Value Profile="(Default)">6</Value>
     </Setting>
+    <Setting Name="ServerSelectedItem" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Localhost</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
