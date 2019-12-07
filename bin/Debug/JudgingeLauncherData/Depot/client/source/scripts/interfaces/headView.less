@@ -1,0 +1,47 @@
+
+.headTopContainer {
+    grid-area: interface;
+
+    border-radius: .5em;
+    padding: .5em;
+
+    background-color: white;
+
+    overflow: auto;
+
+    .header {
+        display: flex;
+
+        .passiveButton {
+            flex-grow: 1;
+
+            margin-left: 2em;
+            z-index: 50;
+        }
+
+        .uploadScoreboardButton {
+            z-index: 50;
+        }
+    }
+
+    .teamListContainer {
+        .teamContainer {
+            cursor: pointer;
+        }
+
+        flex-grow: 1;
+    }
+
+    .playing {
+        font-weight: bold;
+    }
+
+    .startButton {
+        width: 50%;
+        height: 30%;
+    }
+
+    .poolInfoContainer {
+        display: flex;
+    }
+}

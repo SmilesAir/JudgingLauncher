@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="JudgingLauncher.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="TournamentName" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LanModeSelectedItem" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Disabled</Value>
+    </Setting>
+    <Setting Name="JudgeCountSelectedItem" Type="System.String" Scope="User">
+      <Value Profile="(Default)">6</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

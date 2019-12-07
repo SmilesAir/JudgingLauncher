@@ -1,0 +1,14 @@
+{
+  "name": "complete-judging",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "deploy": "npm i && sls deploy && npm run syncSpreadsheets",
+    "deploy:production": "npm i && sls deploy --stage production && npm run syncSpreadsheets:production",
+    "syncSpreadsheets": "aws s3 sync ./spreadsheets/ s3://completejudging-development --acl public-read",
+    "syncSpreadsheets:production": "aws s3 sync ./spreadsheets/ s3://completejudging-production --acl public-read"
+  },
+  "dependencies": {
+    "complete-judging-common": "../common"
+  }
+}

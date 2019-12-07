@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm i && nodemon ./bin/www -- --stage=development",
+    "start:production": "npm i && nodemon ./bin/www -- --stage=production"
+  },
+  "dependencies": {
+    "complete-judging-common": "../common",
+    "cookie-parser": "~1.4.3",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "express": "~4.16.0",
+    "file-system": "^2.2.2",
+    "http-errors": "~1.6.2",
+    "jade": "~1.11.0",
+    "morgan": "~1.9.0",
+    "node-fetch": "^2.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.0"
+  }
+}

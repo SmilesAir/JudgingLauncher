@@ -1,0 +1,133 @@
+﻿<Window x:Class="JudgingLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:JudgingLauncher"
+        mc:Ignorable="d"
+        Title="Judging Launcher" Height="600" Width="800"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
+    <Grid x:Name="TopLevelGrid">
+        <TabControl>
+            <TabItem Header="Run">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Label Content="Tournament Name"/>
+                        <TextBox Grid.Column="1" VerticalContentAlignment="Center" Text="{Binding TournamentName, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <Label Grid.Row="1" Content="Server"/>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel.Resources>
+                                <Style TargetType="{x:Type RadioButton}">
+                                    <Setter Property="Margin" Value="0, 0, 15, 0"/>
+                                </Style>
+                            </StackPanel.Resources>
+                            <RadioButton Name="LocalhostRadio" GroupName="Server" Content="Localhost" IsChecked="True"/>
+                            <RadioButton Name="LocalServerRadio" GroupName="Server" Content="Local Server"/>
+                            <RadioButton Name="InternetProductionRadio" GroupName="Server" Content="Internet Production"/>
+                            <RadioButton Name="InternetDevelopmentRadio" GroupName="Server" Content="Internet Development"/>
+                        </StackPanel>
+                        
+                        <Label Grid.Row="2" Content="LAN Mode"/>
+                        <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding LanModeOptions}" SelectedItem="{Binding LanModeSelectedItem}"/>
+
+                        <Label Grid.Row="3" Content="Judges Count"/>
+                        <ComboBox Grid.Row="3" Grid.Column="1" SelectionChanged="JudgeCountComboBox_SelectionChanged" ItemsSource="{Binding JudgeCountOptions}" SelectedItem="{Binding JudgeCountSelectedItem}"/>
+
+                        <Button Grid.Row="4" Grid.ColumnSpan="2" Click="LaunchButton_Click" Content="Launch"/>
+                    </Grid>
+
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Row="0" Grid.Column="0" Tag="0" Content="Info" Click="LinkButton_Click"/>
+                        <Button Grid.Row="0" Grid.Column="1" Tag="1" Content="Head Judge" Click="LinkButton_Click"/>
+                        <Button Grid.Row="0" Grid.Column="2" Tag="2" Content="Scoreboard" Click="LinkButton_Click"/>
+
+                        <Button Grid.Row="1" Grid.Column="0" Name="LinkButton0" Tag="3" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="1" Grid.Column="1" Name="LinkButton1" Tag="4" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="1" Grid.Column="2" Name="LinkButton2" Tag="5" Visibility="Hidden" Click="LinkButton_Click"/>
+
+                        <Button Grid.Row="2" Grid.Column="0" Name="LinkButton3" Tag="6" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="2" Grid.Column="1" Name="LinkButton4" Tag="7" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="2" Grid.Column="2" Name="LinkButton5" Tag="8" Visibility="Hidden" Click="LinkButton_Click"/>
+
+                        <Button Grid.Row="3" Grid.Column="0" Name="LinkButton6" Tag="9" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="3" Grid.Column="1" Name="LinkButton7" Tag="10" Visibility="Hidden" Click="LinkButton_Click"/>
+                        <Button Grid.Row="3" Grid.Column="2" Name="LinkButton8" Tag="11" Visibility="Hidden" Click="LinkButton_Click"/>
+
+                    </Grid>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Label Grid.Row="1" Content="Client Output"/>
+                        <TextBox Grid.Row="2" Name="ClientOutputTextbox" ScrollViewer.VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Text="{Binding ClientOutputText, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Label Grid.Row="1" Grid.Column="1" Content="Server Output"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Name="ServerOutputTextbox" ScrollViewer.VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Text="{Binding ServerOutputText, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="QR Codes" IsSelected="True">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Image Grid.Row="0" Grid.Column="0" Source="{Binding QrCodeImage0}"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Setup">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Button Content="Install Node" Click="InstallNodeButton_Click"/>
+                    <Button Grid.Row="1" Content="Download Code" Click="DownloadDepotButton_Click"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
+
+    

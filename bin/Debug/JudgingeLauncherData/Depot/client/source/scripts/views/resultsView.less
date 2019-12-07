@@ -1,0 +1,155 @@
+
+.resultsContainer {
+    display: flex;
+
+    flex-direction: column;
+
+    align-content: stretch;
+    align-items: stretch;
+    justify-content: stretch;
+    justify-items: stretch;
+
+    background-color: azure;
+
+    .header {
+        text-align: center;
+
+        font-size: 1.3em;
+        font-weight: bold;
+
+        background-color: bisque;
+    }
+
+    .content {
+        display: flex;
+        flex-direction: column;
+
+        @border-value: 1px solid gray;
+        @border-value-thick: 3px solid gray;
+
+        border-top: @border-value-thick;
+        border-left: @border-value-thick;
+
+        overflow: auto;
+
+        .row {
+            display: flex;
+            border-right: @border-value-thick;
+            border-bottom: @border-value-thick;
+            box-sizing: border-box;
+
+            .divided
+            {
+                display: flex;
+                flex-grow: 1;
+                flex-direction: column;
+
+                .diff {
+                    background: lightgreen;
+                }
+
+                .variety {
+                    background: lightskyblue;
+                }
+
+                .ai {
+                    background: lightyellow;
+                }
+
+                .ex {
+                    background: lightpink;
+                }
+
+                .names {
+                    font-weight: bold;
+                    border-bottom: @border-value;
+                }
+
+                .allDetailsContainer {
+                    display: flex;
+
+                    .detailsContainer {
+                        display: flex;
+
+                        .detailSingle {
+                            width: 3em;
+                            border-right: @border-value;
+                            text-align: center;
+                        }
+                    }
+                }
+
+                .judgeDetailsContainer {
+                    display: flex;
+                    flex-direction: column;
+
+                    .detailScoreLine {
+                        display: flex;
+                        flex-direction: row;
+
+                        .label {
+                            width: 4em;
+                            border-right: @border-value;
+                            background: lightgray;
+                        }
+
+                        @padding-value: 0 .5em 0 .5em;
+
+                        .detailSingle {
+                            width: auto;
+                            padding: @padding-value;
+                            border-right: @border-value;
+                            text-align: center;
+                        }
+
+                        .detailLong {
+                            width: auto;
+                            padding: @padding-value;
+                            border-right: @border-value;
+                            text-align: center;
+                        }
+                    }
+
+                    .bottomBorder {
+                        border-bottom: @border-value;
+                    }
+                }
+
+                .categorySumsContainer {
+                    display: flex;
+
+                    .categorySum {
+                        font-weight: bold;
+                        width: 3em;
+                        border-right: @border-value;
+                        text-align: center;
+                    }
+                }
+            }
+
+            .total
+            {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                width: 3em;
+                border-right: @border-value;
+                border-left: @border-value;
+                font-size: 2em;
+                text-align: center;
+            }
+
+            .rank
+            {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                width: 2.5em;
+                font-size: 2em;
+                text-align: center;
+            }
+        }
+    }
+}
