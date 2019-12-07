@@ -19,9 +19,7 @@ Thumbs.db
 *.lib
 *.sbr
 obj/
-bin/Pool Creator.zip
-Export/
-backup/
-Womens teams.xlsx
+bin/Debug/
+bin/Release/JudgingeLauncherData/
 
 .vs/
