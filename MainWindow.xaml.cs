@@ -42,6 +42,32 @@ namespace JudgingLauncher
 
 		const string dataFolderPath = "JudgingeLauncherData";
 		const string nodejsInstallerFilename = "node-v12.13.1-x64.msi";
+		public ObservableCollection<string> StageOptions
+		{
+			get { return stageOptions; }
+			set
+			{
+				stageOptions = value;
+				OnPropertyChanged("StageOptions");
+			}
+		}
+		ObservableCollection<string> stageOptions = new ObservableCollection<string>() { "Development", "Production" };
+		public string StageSelectedItem
+		{
+			get { return stageSelectedItem; }
+			set
+			{
+				stageSelectedItem = value;
+				OnPropertyChanged("StageSelectedItem");
+
+				Properties.Settings.Default.StageSelectedItem = value;
+				Properties.Settings.Default.Save();
+
+				SetupLinks();
+			}
+		}
+		string stageSelectedItem = "";
+		public bool IsProduction { get { return StageSelectedItem == "Production"; } }
 		public ObservableCollection<string> ServerOptions
 		{
 			get { return serverOptions; }
@@ -206,6 +232,7 @@ namespace JudgingLauncher
 				}
 			}
 
+			StageSelectedItem = Properties.Settings.Default.StageSelectedItem;
 			ServerSelectedItem = Properties.Settings.Default.ServerSelectedItem;
 			LanModeSelectedItem = Properties.Settings.Default.LanModeSelectedItem;
 			JudgeCountSelectedItem = Properties.Settings.Default.JudgeCountSelectedItem;
@@ -344,7 +371,7 @@ namespace JudgingLauncher
 			string cd = "cd " + Path.Combine(dataFolderPath, "Depot", "client");
 			clientProcess.StandardInput.WriteLine(cd);
 
-			clientProcess.StandardInput.WriteLine("npm start");
+			clientProcess.StandardInput.WriteLine(IsProduction ? "npm run start:production" : "npm start");
 
 			clientProcess.StandardInput.Flush();
 			clientProcess.StandardInput.Close();
@@ -385,7 +412,7 @@ namespace JudgingLauncher
 			string cd = "cd " + Path.Combine(dataFolderPath, "Depot", "server");
 			serverProcess.StandardInput.WriteLine(cd);
 
-			serverProcess.StandardInput.WriteLine("npm start");
+			serverProcess.StandardInput.WriteLine(IsProduction ? "npm run start:production" : "npm start");
 
 			serverProcess.StandardInput.Flush();
 			serverProcess.StandardInput.Close();
@@ -414,9 +441,9 @@ namespace JudgingLauncher
 			serverLogTimer.Start();
 		}
 
-		private void LaunchButton_Click(object sender, RoutedEventArgs e)
+		private void Launch()
 		{
-			KillAllNodeProcesses();
+			KillAllProcesses();
 
 			StartClient();
 
@@ -426,12 +453,20 @@ namespace JudgingLauncher
 			}
 		}
 
+		private void LaunchButton_Click(object sender, RoutedEventArgs e)
+		{
+			Launch();
+		}
+
 		private void KillAllNodeProcesses()
 		{
 			Process[] nodeProcesses = Process.GetProcessesByName("node");
 			foreach (Process nodeProcess in nodeProcesses)
 			{
-				nodeProcess.Kill();
+				if (!nodeProcess.HasExited)
+				{
+					nodeProcess.Kill();
+				}
 			}
 		}
 
@@ -478,7 +513,7 @@ namespace JudgingLauncher
 			}
 			else if (ServerSelectedItem == "Internet")
 			{
-				if (false)
+				if (IsProduction)
 				{
 					url = "https://d5rsjgoyn07f8.cloudfront.net/index.html";
 				}
@@ -609,6 +644,32 @@ namespace JudgingLauncher
 					bi.EndInit();
 					judgeLinkObjects[i].qrCodeImage.Source = bi;
 				}
+			}
+		}
+
+		private void BackupAndResetServerButton_Click(object sender, RoutedEventArgs e)
+		{
+			string serverDataPath = Path.Combine(dataFolderPath, "Depot", "server", "serverData");
+			if (Directory.Exists(serverDataPath))
+			{
+				new Thread(() =>
+				{
+					bool isRunning = Process.GetProcessesByName("node").Count() > 0;
+					if (isRunning)
+					{
+						KillAllProcesses();
+					}
+
+					// Wait for node processes to die
+					System.Threading.Thread.Sleep(2000);
+
+					Directory.Move(serverDataPath, serverDataPath + " " + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"));
+
+					if (isRunning)
+					{
+						Launch();
+					}
+				}).Start();
 			}
 		}
 	}

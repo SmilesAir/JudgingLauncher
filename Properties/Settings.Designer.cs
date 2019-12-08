@@ -70,5 +70,17 @@ namespace JudgingLauncher.Properties {
                 this["ServerSelectedItem"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Development")]
+        public string StageSelectedItem {
+            get {
+                return ((string)(this["StageSelectedItem"]));
+            }
+            set {
+                this["StageSelectedItem"] = value;
+            }
+        }
     }
 }

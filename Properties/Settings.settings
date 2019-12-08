@@ -14,5 +14,8 @@
     <Setting Name="ServerSelectedItem" Type="System.String" Scope="User">
       <Value Profile="(Default)">Localhost</Value>
     </Setting>
+    <Setting Name="StageSelectedItem" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Development</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
