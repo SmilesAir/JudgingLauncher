@@ -82,5 +82,29 @@ namespace JudgingLauncher.Properties {
                 this["StageSelectedItem"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int SelectedTabIndex {
+            get {
+                return ((int)(this["SelectedTabIndex"]));
+            }
+            set {
+                this["SelectedTabIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IsFirstStartup {
+            get {
+                return ((bool)(this["IsFirstStartup"]));
+            }
+            set {
+                this["IsFirstStartup"] = value;
+            }
+        }
     }
 }

@@ -1,0 +1,43 @@
+
+.diffInspectorContainer {
+    grid-area: interface;
+    display: flex;
+    flex-direction: column;
+
+    border-radius: .5em;
+    padding: .5em;
+
+    background-color: white;
+
+    overflow: auto;
+
+    user-select: none;
+
+    .scores {
+        background-color: rgb(240, 240, 240);
+
+        .teamContainer {
+            .teamNames {
+                font-weight: bold;
+            }
+
+            .inspectedResults {
+                padding-left: 1em;
+            }
+        }
+    }
+
+    .controls {
+        background-color: rgb(240, 240, 240);
+
+        margin-top: 1em;
+
+        .numberInput {
+            width: 3em;
+        }
+
+        .invalid {
+            background-color: salmon;
+        }
+    }
+}

@@ -40,8 +40,52 @@ namespace JudgingLauncher
 			}
 		}
 
-		const string dataFolderPath = "JudgingeLauncherData";
-		const string nodejsInstallerFilename = "node-v12.13.1-x64.msi";
+		const string dataFolderPath = "JudgingLauncherData";
+		const string nodeInstallerFilename = "node-v12.13.1-x64.msi";
+		const string gitInstallerFilename = "Git-2.24.0.2-64-bit.exe";
+		public string InstallNodeButtonString
+		{
+			get { return installNodeButtonString; }
+			set
+			{
+				installNodeButtonString = value;
+				OnPropertyChanged("InstallNodeButtonString");
+			}
+		}
+		string installNodeButtonString = "Checking for Node.js Install";
+		public string InstallGitButtonString
+		{
+			get { return installGitButtonString; }
+			set
+			{
+				installGitButtonString = value;
+				OnPropertyChanged("InstallGitButtonString");
+			}
+		}
+		string installGitButtonString = "Checking for Git Install";
+		public string SetupOutputText
+		{
+			get { return setupOutputText; }
+			set
+			{
+				setupOutputText = value;
+				OnPropertyChanged("SetupOutputText");
+			}
+		}
+		string setupOutputText = "";
+		public int SelectedTabIndex
+		{
+			get { return selectedTabIndex; }
+			set
+			{
+				selectedTabIndex = value;
+				OnPropertyChanged("SelectedTabIndex");
+
+				Properties.Settings.Default.SelectedTabIndex = value;
+				Properties.Settings.Default.Save();
+			}
+		}
+		int selectedTabIndex = 0;
 		public ObservableCollection<string> StageOptions
 		{
 			get { return stageOptions; }
@@ -224,18 +268,37 @@ namespace JudgingLauncher
 			LanModeOptions.Add("Disabled");
 
 			var host = Dns.GetHostEntry(Dns.GetHostName());
+			string bestStartingIp = null;
 			foreach (var ip in host.AddressList)
 			{
 				if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
 				{
-					LanModeOptions.Add(ip.ToString());
+					string ipString = ip.ToString();
+					LanModeOptions.Add(ipString);
+
+					if (ipString.StartsWith("192"))
+					{
+						bestStartingIp = ipString;
+					}
+					else if (bestStartingIp == null && ipString != "Disabled")
+					{
+						bestStartingIp = ipString;
+					}
 				}
+			}
+
+			if (Properties.Settings.Default.IsFirstStartup)
+			{
+				Properties.Settings.Default.IsFirstStartup = false;
+
+				Properties.Settings.Default.LanModeSelectedItem = bestStartingIp;
 			}
 
 			StageSelectedItem = Properties.Settings.Default.StageSelectedItem;
 			ServerSelectedItem = Properties.Settings.Default.ServerSelectedItem;
 			LanModeSelectedItem = Properties.Settings.Default.LanModeSelectedItem;
 			JudgeCountSelectedItem = Properties.Settings.Default.JudgeCountSelectedItem;
+			SelectedTabIndex = Properties.Settings.Default.SelectedTabIndex;
 
 			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton0, QrCodeImage0, QrCodeLabel0));
 			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton1, QrCodeImage1, QrCodeLabel1));
@@ -248,6 +311,21 @@ namespace JudgingLauncher
 			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton8, QrCodeImage8, QrCodeLabel8));
 
 			SetupLinks();
+
+			new Thread(() => {
+				bool isNodeInstalled = CheckNodeInstalled();
+				bool isGitInstalled = CheckGitInstalled();
+
+				Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
+						new Action(() =>
+						{
+							InstallNodeButtonString = isNodeInstalled ? "Reinstall Node.js" : "Click to install Node.js";
+							InstallGitButtonString = isGitInstalled ? "Reinstall Git" : "Click to install Git";
+
+							SetupOutputText += isNodeInstalled ? "Node.js is Installed\r\n" : "Missing Node.js. Please Install\r\n";
+							SetupOutputText += isNodeInstalled ? "Git is Installed\r\n" : "Missing Git. Please Install\r\n";
+						}));
+			}).Start();
 		}
 
 		private void SafeDirectoryDelete(string path)
@@ -268,6 +346,8 @@ namespace JudgingLauncher
 
 		private void DownloadDepot()
 		{
+			KillAllNodeProcesses();
+
 			string completeJudgingZipFilename = Path.Combine(dataFolderPath, "CompleteJudging.zip");
 			string completeJudgingDepot = Path.Combine(dataFolderPath, "Depot");
 
@@ -281,6 +361,7 @@ namespace JudgingLauncher
 			catch (Exception exception)
 			{
 				Console.WriteLine(exception.Message);
+				SetupOutputText += "Error Downloading Depot: " + exception.Message + "\r\n";
 			}
 
 			if (File.Exists(completeJudgingZipFilename))
@@ -304,12 +385,17 @@ namespace JudgingLauncher
 				catch (Exception exception)
 				{
 					Console.WriteLine(exception.Message);
+					SetupOutputText += "Error Unziping Depot: " + exception.Message + "\r\n";
 				}
 			}
 			else
 			{
-				// Error
+				const string message = @"Can't find downloaded zip";
+				Console.WriteLine(message);
+				SetupOutputText += "Error Unziping Depot: " + message + "\r\n";
 			}
+
+			SetupOutputText += "Depot successfully downloaded\r\n";
 		}
 
 		private void CreateDataDirectory()
@@ -327,7 +413,7 @@ namespace JudgingLauncher
 			}
 		}
 
-		private void CheckNodejsAndInstall()
+		private bool CheckNodeInstalled()
 		{
 			Process cmd = new Process();
 			cmd.StartInfo.FileName = "cmd.exe";
@@ -344,17 +430,53 @@ namespace JudgingLauncher
 			cmd.WaitForExit();
 
 			string output = cmd.StandardOutput.ReadToEnd();
-			if (!output.Contains("Usage: npm <command>"))
+			return output.Contains("Usage: npm <command>");
+		}
+
+		private void CheckNodeAndInstall()
+		{
+			if (MessageBox.Show("Click OK to install Node.js", "Attention", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
 			{
-				if (MessageBox.Show("Click OK to install Node.js", "Attention", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
-				{
-					Process.Start(nodejsInstallerFilename);
-				}
+				Process.Start(nodeInstallerFilename).WaitForExit();
+
+				Restart();
 			}
-			else
+		}
+
+		private bool CheckGitInstalled()
+		{
+			Process cmd = new Process();
+			cmd.StartInfo.FileName = "cmd.exe";
+			cmd.StartInfo.RedirectStandardInput = true;
+			cmd.StartInfo.RedirectStandardOutput = true;
+			cmd.StartInfo.CreateNoWindow = true;
+			cmd.StartInfo.UseShellExecute = false;
+			cmd.Start();
+
+			cmd.StandardInput.WriteLine("git");
+			cmd.StandardInput.Flush();
+			cmd.StandardInput.Close();
+
+			cmd.WaitForExit();
+
+			string output = cmd.StandardOutput.ReadToEnd();
+			return output.Contains("usage: git");
+		}
+
+		private void CheckGitAndInstall()
+		{
+			if (MessageBox.Show("Click OK to install Git", "Attention", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
 			{
-				MessageBox.Show("Node.js already installed", "Attention");
+				Process.Start(gitInstallerFilename).WaitForExit();
+
+				Restart();
 			}
+		}
+
+		private void Restart()
+		{
+			System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
+			Application.Current.Shutdown();
 		}
 
 		private void StartClient()
@@ -492,7 +614,11 @@ namespace JudgingLauncher
 
 		private void InstallNodeButton_Click(object sender, RoutedEventArgs e)
 		{
-			CheckNodejsAndInstall();
+			CheckNodeAndInstall();
+		}
+		private void InstallGitButton_Click(object sender, RoutedEventArgs e)
+		{
+			CheckGitAndInstall();
 		}
 
 		private void DownloadDepotButton_Click(object sender, RoutedEventArgs e)
@@ -671,6 +797,14 @@ namespace JudgingLauncher
 					}
 				}).Start();
 			}
+		}
+
+		private void PrintQrCodesButton_Click(object sender, RoutedEventArgs e)
+		{
+			PrintDialog dlg = new PrintDialog();
+			dlg.PrintTicket.PageOrientation = System.Printing.PageOrientation.Portrait;
+			dlg.ShowDialog();
+			dlg.PrintVisual(QrCodesGrid, "Printing");
 		}
 	}
 

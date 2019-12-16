@@ -9,7 +9,7 @@
         Loaded="Window_Loaded"
         Closing="Window_Closing">
     <Grid x:Name="TopLevelGrid">
-        <TabControl>
+        <TabControl SelectedIndex="{Binding SelectedTabIndex}">
             <TabItem Header="Run">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -105,38 +105,46 @@
             <TabItem Header="QR Codes">
                 <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" MinHeight="50"/>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                    <Button Grid.ColumnSpan="3" Content="Print QR Codes" Click="PrintQrCodesButton_Click"/>
 
-                    <Image Grid.Row="0" Grid.Column="0" Name="QrCodeImage0"/>
-                    <Image Grid.Row="0" Grid.Column="1" Name="QrCodeImage1"/>
-                    <Image Grid.Row="0" Grid.Column="2" Name="QrCodeImage2"/>
-                    <Image Grid.Row="2" Grid.Column="0" Name="QrCodeImage3"/>
-                    <Image Grid.Row="2" Grid.Column="1" Name="QrCodeImage4"/>
-                    <Image Grid.Row="2" Grid.Column="2" Name="QrCodeImage5"/>
-                    <Image Grid.Row="4" Grid.Column="0" Name="QrCodeImage6"/>
-                    <Image Grid.Row="4" Grid.Column="1" Name="QrCodeImage7"/>
-                    <Image Grid.Row="4" Grid.Column="2" Name="QrCodeImage8"/>
+                    <Grid Grid.Row="1" Name="QrCodesGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                    <Label Grid.Row="1" Grid.Column="0" Name="QrCodeLabel0" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-                    <Label Grid.Row="1" Grid.Column="1" Name="QrCodeLabel1" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-                    <Label Grid.Row="1" Grid.Column="2" Name="QrCodeLabel2" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-                    <Label Grid.Row="3" Grid.Column="0" Name="QrCodeLabel3" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-                    <Label Grid.Row="3" Grid.Column="1" Name="QrCodeLabel4" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-                    <Label Grid.Row="3" Grid.Column="2" Name="QrCodeLabel5" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-                    <Label Grid.Row="5" Grid.Column="0" Name="QrCodeLabel6" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-                    <Label Grid.Row="5" Grid.Column="1" Name="QrCodeLabel7" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-                    <Label Grid.Row="5" Grid.Column="2" Name="QrCodeLabel8" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                        <Image Grid.Row="0" Grid.Column="0" Name="QrCodeImage0"/>
+                        <Image Grid.Row="0" Grid.Column="1" Name="QrCodeImage1"/>
+                        <Image Grid.Row="0" Grid.Column="2" Name="QrCodeImage2"/>
+                        <Image Grid.Row="2" Grid.Column="0" Name="QrCodeImage3"/>
+                        <Image Grid.Row="2" Grid.Column="1" Name="QrCodeImage4"/>
+                        <Image Grid.Row="2" Grid.Column="2" Name="QrCodeImage5"/>
+                        <Image Grid.Row="4" Grid.Column="0" Name="QrCodeImage6"/>
+                        <Image Grid.Row="4" Grid.Column="1" Name="QrCodeImage7"/>
+                        <Image Grid.Row="4" Grid.Column="2" Name="QrCodeImage8"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Name="QrCodeLabel0" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Row="1" Grid.Column="1" Name="QrCodeLabel1" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Row="1" Grid.Column="2" Name="QrCodeLabel2" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Row="3" Grid.Column="0" Name="QrCodeLabel3" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Row="3" Grid.Column="1" Name="QrCodeLabel4" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Row="3" Grid.Column="2" Name="QrCodeLabel5" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Row="5" Grid.Column="0" Name="QrCodeLabel6" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Row="5" Grid.Column="1" Name="QrCodeLabel7" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Row="5" Grid.Column="2" Name="QrCodeLabel8" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                    </Grid>
                 </Grid>
             </TabItem>
             <TabItem Header="Setup">
@@ -146,8 +154,19 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <Button Content="Install Node" Click="InstallNodeButton_Click"/>
-                    <Button Grid.Row="1" Content="Download Code" Click="DownloadDepotButton_Click"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Content="{Binding InstallNodeButtonString}" Click="InstallNodeButton_Click"/>
+                        <Button Grid.Column="1" Content="{Binding InstallGitButtonString}" Click="InstallGitButton_Click"/>
+                        <Button Grid.Column="2" Content="Download Code" Click="DownloadDepotButton_Click"/>
+                    </Grid>
+
+                    <TextBox Grid.Row="1" AcceptsReturn="True" Text="{Binding SetupOutputText, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
             </TabItem>
         </TabControl>
