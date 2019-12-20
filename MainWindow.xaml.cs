@@ -229,6 +229,7 @@ namespace JudgingLauncher
 		}
 		string clientOutputText = "";
 		DispatcherTimer clientLogTimer = new DispatcherTimer();
+		DispatcherTimer clientLoadingTimer = new DispatcherTimer();
 
 		public string ServerOutputText
 		{
@@ -251,6 +252,7 @@ namespace JudgingLauncher
 		string serverOutputText = "";
 		Process serverProcess;
 		DispatcherTimer serverLogTimer = new DispatcherTimer();
+		DispatcherTimer serverLoadingTimer = new DispatcherTimer();
 
 		public MainWindow()
 		{
@@ -362,6 +364,8 @@ namespace JudgingLauncher
 			{
 				Console.WriteLine(exception.Message);
 				SetupOutputText += "Error Downloading Depot: " + exception.Message + "\r\n";
+
+				return;
 			}
 
 			if (File.Exists(completeJudgingZipFilename))
@@ -386,6 +390,8 @@ namespace JudgingLauncher
 				{
 					Console.WriteLine(exception.Message);
 					SetupOutputText += "Error Unziping Depot: " + exception.Message + "\r\n";
+
+					return;
 				}
 			}
 			else
@@ -393,6 +399,8 @@ namespace JudgingLauncher
 				const string message = @"Can't find downloaded zip";
 				Console.WriteLine(message);
 				SetupOutputText += "Error Unziping Depot: " + message + "\r\n";
+
+				return;
 			}
 
 			SetupOutputText += "Depot successfully downloaded\r\n";
@@ -487,6 +495,26 @@ namespace JudgingLauncher
 			clientProcess.StartInfo.RedirectStandardOutput = true;
 			clientProcess.StartInfo.CreateNoWindow = true;
 			clientProcess.StartInfo.UseShellExecute = false;
+			clientProcess.EnableRaisingEvents = true;
+			clientProcess.Exited += (object sender, EventArgs e) =>
+			{
+				clientLoadingTimer.Stop();
+
+				if (Application.Current != null)
+				{
+					Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
+						new Action(() =>
+						{
+							ClientOutputText += "\r\n\r\n";
+							ClientOutputText += "---------------------------------------------------------------------------------\r\n";
+							ClientOutputText += "Process exited!\r\n";
+							ClientOutputText += "This should only happen on relaunch or re download.\r\n";
+							ClientOutputText += "There may be an issue with your install setup.\r\n";
+							ClientOutputText += "---------------------------------------------------------------------------------\r\n";
+							ClientOutputText += "\r\n\r\n";
+						}));
+				}
+			};
 			clientProcess.Start();
 			clientProcess.BeginOutputReadLine();
 
@@ -512,12 +540,28 @@ namespace JudgingLauncher
 					Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
 						new Action(() =>
 						{
+							if (newText.Contains("Startup Finished. Ready to go!"))
+							{
+								clientLoadingTimer.Stop();
+							}
+
 							ClientOutputText += newText;
 							newText = "";
 						}));
 				}
 			};
 			clientLogTimer.Start();
+
+			clientLoadingTimer.Interval = new TimeSpan(0, 0, 1);
+			clientLoadingTimer.Tick += (object sender, EventArgs e) =>
+			{
+				Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
+					new Action(() =>
+					{
+						ClientOutputText += "Loading Client ...\r\n";
+					}));
+			};
+			clientLoadingTimer.Start();
 		}
 
 		private void StartLocalServer()
@@ -528,6 +572,26 @@ namespace JudgingLauncher
 			serverProcess.StartInfo.RedirectStandardOutput = true;
 			serverProcess.StartInfo.CreateNoWindow = true;
 			serverProcess.StartInfo.UseShellExecute = false;
+			serverProcess.EnableRaisingEvents = true;
+			serverProcess.Exited += (object sender, EventArgs e) =>
+			{
+				serverLoadingTimer.Stop();
+
+				if (Application.Current != null)
+				{
+					Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
+						new Action(() =>
+						{
+							ServerOutputText += "\r\n\r\n";
+							ServerOutputText += "---------------------------------------------------------------------------------\r\n";
+							ServerOutputText += "Process exited!\r\n";
+							ServerOutputText += "This should only happen on relaunch or re download.\r\n";
+							ServerOutputText += "There may be an issue with your install setup.\r\n";
+							ServerOutputText += "---------------------------------------------------------------------------------\r\n";
+							ServerOutputText += "\r\n\r\n";
+						}));
+				}
+			};
 			serverProcess.Start();
 			serverProcess.BeginOutputReadLine();
 
@@ -554,13 +618,28 @@ namespace JudgingLauncher
 					Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
 						new Action(() =>
 						{
+							if (newText.Contains("Startup Finished. Ready to go!"))
+							{
+								serverLoadingTimer.Stop();
+							}
+
 							ServerOutputText += newText;
 							newText = "";
-							OnPropertyChanged("ServerOutputText");
 						}));
 				}
 			};
 			serverLogTimer.Start();
+
+			serverLoadingTimer.Interval = new TimeSpan(0, 0, 1);
+			serverLoadingTimer.Tick += (object sender, EventArgs e) =>
+			{
+				Application.Current.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background,
+					new Action(() =>
+					{
+						ServerOutputText += "Loading Server ...\r\n";
+					}));
+			};
+			serverLoadingTimer.Start();
 		}
 
 		private void Launch()
