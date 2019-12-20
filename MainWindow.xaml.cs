@@ -765,51 +765,51 @@ namespace JudgingLauncher
 
 			if (judgeCount == 3)
 			{
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("variety");
 				interfaceNameMap.Add("exAi");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("diff");
 
-				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Diff 1";
+				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Ex/Ai 1";
 				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton2.Content = "Variety 1";
-				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton4.Content = "Ex/Ai 1";
+				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton4.Content = "Diff 1";
 			}
 			else if (judgeCount == 6)
 			{
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("variety");
 				interfaceNameMap.Add("exAi");
 				interfaceNameMap.Add("exAi");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("diff");
+				interfaceNameMap.Add("diff");
 
-				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Diff 1";
-				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton1.Content = "Diff 2";
+				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Ex/Ai 1";
+				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton1.Content = "Ex/Ai 2";
 				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton2.Content = "Variety 1";
 				judgeLinkObjects[3].qrCodeLabel.Content = LinkButton3.Content = "Variety 2";
-				judgeLinkObjects[4].qrCodeLabel.Content = LinkButton4.Content = "Ex/Ai 1";
-				judgeLinkObjects[5].qrCodeLabel.Content = LinkButton5.Content = "Ex/Ai 2";
+				judgeLinkObjects[4].qrCodeLabel.Content = LinkButton4.Content = "Diff 1";
+				judgeLinkObjects[5].qrCodeLabel.Content = LinkButton5.Content = "Diff 2";
 			}
 			else if (judgeCount == 9)
 			{
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("variety");
 				interfaceNameMap.Add("exAi");
 				interfaceNameMap.Add("exAi");
 				interfaceNameMap.Add("exAi");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("variety");
+				interfaceNameMap.Add("diff");
+				interfaceNameMap.Add("diff");
+				interfaceNameMap.Add("diff");
 
-				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Diff 1";
-				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton1.Content = "Diff 2";
-				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton2.Content = "Diff 3";
+				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Ex/Ai 1";
+				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton1.Content = "Ex/Ai 2";
+				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton2.Content = "Ex/Ai 3";
 				judgeLinkObjects[3].qrCodeLabel.Content = LinkButton3.Content = "Variety 1";
 				judgeLinkObjects[4].qrCodeLabel.Content = LinkButton4.Content = "Variety 2";
 				judgeLinkObjects[5].qrCodeLabel.Content = LinkButton5.Content = "Variety 3";
-				judgeLinkObjects[6].qrCodeLabel.Content = LinkButton6.Content = "Ex/Ai 1";
-				judgeLinkObjects[7].qrCodeLabel.Content = LinkButton7.Content = "Ex/Ai 2";
-				judgeLinkObjects[8].qrCodeLabel.Content = LinkButton8.Content = "Ex/Ai 3";
+				judgeLinkObjects[6].qrCodeLabel.Content = LinkButton6.Content = "Diff 1";
+				judgeLinkObjects[7].qrCodeLabel.Content = LinkButton7.Content = "Diff 2";
+				judgeLinkObjects[8].qrCodeLabel.Content = LinkButton8.Content = "Diff 3";
 			}
 
 			LinkButtonInfo.Tag = GetLink("info", "");
@@ -830,7 +830,7 @@ namespace JudgingLauncher
 
 			for (int i = 0; i < judgeCount; ++i)
 			{
-				string link = GetLink(interfaceNameMap[i], "");
+				string link = GetLink(interfaceNameMap[i], i.ToString());
 				judgeLinkObjects[i].linkButton.Tag = link;
 				judgeLinkObjects[i].linkButton.Visibility = Visibility.Visible;
 				judgeLinkObjects[i].qrCodeImage.Visibility = Visibility.Visible;
