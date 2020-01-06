@@ -43,6 +43,7 @@ namespace JudgingLauncher
 		const string dataFolderPath = "JudgingLauncherData";
 		const string nodeInstallerFilename = "node-v12.13.1-x64.msi";
 		const string gitInstallerFilename = "Git-2.24.0.2-64-bit.exe";
+		const string depotCloneUrl = "https://github.com/SmilesAir/CompleteJudging.git";
 		public string InstallNodeButtonString
 		{
 			get { return installNodeButtonString; }
@@ -63,6 +64,16 @@ namespace JudgingLauncher
 			}
 		}
 		string installGitButtonString = "Checking for Git Install";
+		public string DownloadCodeButtonString
+		{
+			get { return downloadCodeButtonString; }
+			set
+			{
+				downloadCodeButtonString = value;
+				OnPropertyChanged("DownloadCodeButtonString");
+			}
+		}
+		string downloadCodeButtonString = "Download Code";
 		public string SetupOutputText
 		{
 			get { return setupOutputText; }
@@ -326,6 +337,8 @@ namespace JudgingLauncher
 
 							SetupOutputText += isNodeInstalled ? "Node.js is Installed\r\n" : "Missing Node.js. Please Install\r\n";
 							SetupOutputText += isNodeInstalled ? "Git is Installed\r\n" : "Missing Git. Please Install\r\n";
+
+							UpdateDepotGitStatus();
 						}));
 			}).Start();
 		}
@@ -346,64 +359,100 @@ namespace JudgingLauncher
 			}
 		}
 
-		private void DownloadDepot()
+		private void UpdateDepotGitStatus()
 		{
-			KillAllNodeProcesses();
-
-			string completeJudgingZipFilename = Path.Combine(dataFolderPath, "CompleteJudging.zip");
-			string completeJudgingDepot = Path.Combine(dataFolderPath, "Depot");
-
-			try
+			if (!CheckGitInstalled())
 			{
-				using (var client = new WebClient())
-				{
-					client.DownloadFile("https://github.com/SmilesAir/CompleteJudging/archive/master.zip", completeJudgingZipFilename);
-				}
-			}
-			catch (Exception exception)
-			{
-				Console.WriteLine(exception.Message);
-				SetupOutputText += "Error Downloading Depot: " + exception.Message + "\r\n";
-
 				return;
 			}
 
-			if (File.Exists(completeJudgingZipFilename))
+			string completeJudgingDepot = Path.Combine(dataFolderPath, "Depot");
+			if (!Directory.Exists(completeJudgingDepot))
 			{
-				try
-				{
-					string tempUnzipPath = Path.Combine(dataFolderPath, "TempUnzip");
-					SafeDirectoryDelete(tempUnzipPath);
-
-					ZipFile.ExtractToDirectory(completeJudgingZipFilename, tempUnzipPath);
-
-					SafeDirectoryDelete(completeJudgingDepot);
-
-					List<string> depotDirs = new List<string>(Directory.EnumerateDirectories(tempUnzipPath));
-
-					Directory.Move(depotDirs[0], completeJudgingDepot);
-
-					SafeDirectoryDelete(tempUnzipPath);
-					SafeDeleteFile(completeJudgingZipFilename);
-				}
-				catch (Exception exception)
-				{
-					Console.WriteLine(exception.Message);
-					SetupOutputText += "Error Unziping Depot: " + exception.Message + "\r\n";
-
-					return;
-				}
+				SetupOutputText += "Missing Code. Need to download code\r\n";
 			}
 			else
 			{
-				const string message = @"Can't find downloaded zip";
-				Console.WriteLine(message);
-				SetupOutputText += "Error Unziping Depot: " + message + "\r\n";
+				{
+					Process gitProcess = new Process();
+					gitProcess.StartInfo.FileName = "git";
+					gitProcess.StartInfo.WorkingDirectory = completeJudgingDepot;
+					gitProcess.StartInfo.Arguments = "fetch";
+					gitProcess.StartInfo.CreateNoWindow = true;
+					gitProcess.StartInfo.UseShellExecute = false;
+					gitProcess.Start();
 
+					gitProcess.WaitForExit();
+				}
+				{
+					Process gitProcess = new Process();
+					gitProcess.StartInfo.FileName = "git";
+					gitProcess.StartInfo.WorkingDirectory = completeJudgingDepot;
+					gitProcess.StartInfo.Arguments = "status";
+					gitProcess.StartInfo.RedirectStandardOutput = true;
+					gitProcess.StartInfo.CreateNoWindow = true;
+					gitProcess.StartInfo.UseShellExecute = false;
+					gitProcess.Start();
+
+					gitProcess.WaitForExit();
+					string output = gitProcess.StandardOutput.ReadToEnd();
+					if (output.Contains("Your branch is up to date"))
+					{
+						SetupOutputText += "You have the lastest code version\r\n";
+						DownloadCodeButtonString = "Download Code";
+					}
+					else
+					{
+						SetupOutputText += "Code is out of update. Click Download Code to update\r\n";
+						DownloadCodeButtonString = "Download Code\r\n(New Code Available)";
+					}
+				}
+			}
+		}
+
+		private void DownloadDepot()
+		{
+			if (!CheckGitInstalled())
+			{
+				SetupOutputText += "Need to install Git before code can be downloaded\r\n";
 				return;
 			}
 
-			SetupOutputText += "Depot successfully downloaded\r\n";
+			string completeJudgingDepot = Path.Combine(dataFolderPath, "Depot");
+			if (!Directory.Exists(completeJudgingDepot))
+			{
+				string gitCommand = "clone " + depotCloneUrl + " Depot";
+				Process gitProcess = new Process();
+				gitProcess.StartInfo.FileName = "git";
+				gitProcess.StartInfo.WorkingDirectory = dataFolderPath;
+				gitProcess.StartInfo.Arguments = gitCommand;
+				gitProcess.StartInfo.RedirectStandardOutput = true;
+				gitProcess.StartInfo.CreateNoWindow = true;
+				gitProcess.StartInfo.UseShellExecute = false;
+				gitProcess.Start();
+
+				gitProcess.WaitForExit();
+
+				SetupOutputText += "Code successfully downloaded\r\n";
+			}
+			else
+			{
+				string gitCommand = "pull";
+				Process gitProcess = new Process();
+				gitProcess.StartInfo.FileName = "git";
+				gitProcess.StartInfo.WorkingDirectory = completeJudgingDepot;
+				gitProcess.StartInfo.Arguments = gitCommand;
+				gitProcess.StartInfo.RedirectStandardOutput = true;
+				gitProcess.StartInfo.CreateNoWindow = true;
+				gitProcess.StartInfo.UseShellExecute = false;
+				gitProcess.Start();
+
+				gitProcess.WaitForExit();
+				SetupOutputText += gitProcess.StandardOutput.ReadToEnd();
+
+				SetupOutputText += "Code successfully updated\r\n";
+				DownloadCodeButtonString = "Download Code";
+			}
 		}
 
 		private void CreateDataDirectory()

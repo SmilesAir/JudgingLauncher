@@ -46,7 +46,7 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
 
     fillWithResults() {
         let teamResults = this.interface.getActiveResultsData()
-        
+
         if (teamResults !== undefined) {
             this.state.aiCounters.music.score = teamResults.getAiData("music").score
             this.state.aiCounters.teamwork.score = teamResults.getAiData("teamwork").score

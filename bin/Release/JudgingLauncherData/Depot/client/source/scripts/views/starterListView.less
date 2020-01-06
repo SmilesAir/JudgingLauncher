@@ -1,0 +1,109 @@
+
+
+.starterListContainer {
+    display: flex;
+
+    flex-direction: column;
+
+    align-content: stretch;
+    align-items: stretch;
+    justify-content: stretch;
+    justify-items: stretch;
+
+    background-color: azure;
+
+    .header {
+        text-align: center;
+
+        font-size: 2em;
+        font-weight: bold;
+
+        background-color: bisque;
+    }
+
+    .content {
+        display: grid;
+        grid-template-areas:
+            "teamsHeader spacer judgesHeader"
+            "teamsContainer spacer judgesContainer";
+        grid-template-rows: auto auto;
+        grid-template-columns: 1fr 5em 1fr;
+
+        @border-value: 1px solid gray;
+
+        .baseHeader {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .teamsHeader {
+            .baseHeader;
+        }
+
+        .judgesHeader {
+            .baseHeader;
+        }
+
+        .spacer {
+        }
+
+        .teamsContainer {
+            border-top: @border-value;
+            border-left: @border-value;
+            border-right: @border-value;
+
+            .teamContainer {
+                display: flex;
+
+                border-bottom: @border-value;
+
+                .teamNumber {
+                    font-size: 2em;
+                    padding: .2em;
+
+                    border-right: @border-value;
+                }
+
+                .teamNamesContainer {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+
+                    padding: .2em;
+                }
+            }
+        }
+
+        .judgesContainer {
+            .categoryContainer {
+                display: flex;
+
+                border-top: @border-value;
+                border-left: @border-value;
+                border-right: @border-value;
+
+                .category {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+
+                    width: 10em;
+
+                    border-right: @border-value;
+                }
+
+                .judgeNamesContainer {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+
+                    padding: .2em;
+                }
+            }
+
+            .bottom {
+                border-bottom: @border-value;
+            }
+        }
+    }
+}

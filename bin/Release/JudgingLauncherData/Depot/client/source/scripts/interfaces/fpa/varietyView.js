@@ -22,7 +22,7 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
 
     fillWithResults() {
         let teamResults = this.interface.getActiveResultsData()
-        
+
         if (teamResults !== undefined) {
             this.state.moveCount = teamResults.quantityScore || 0
             this.state.qualityScore = teamResults.qualityScore || 0

@@ -143,7 +143,7 @@ module.exports = class extends InterfaceModelBase {
 
     stopRoutine() {
         this.obs.isJudging = false
-        
+
         clearInterval(this.updateHandle)
 
         this.obs.judgingTimeMs = 0

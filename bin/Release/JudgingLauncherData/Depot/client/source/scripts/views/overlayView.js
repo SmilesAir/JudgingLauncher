@@ -6,6 +6,7 @@ const MainStore = require("scripts/stores/mainStore.js")
 const DataAction = require("scripts/actions/dataAction.js")
 const Interfaces = require("scripts/interfaces/interfaces.js")
 const DataStore = require("scripts/stores/dataStore.js")
+const Enums = require("scripts/stores/enumStore.js")
 
 require("./overlayView.less")
 
@@ -118,6 +119,14 @@ require("./overlayView.less")
     }
 
     render() {
+        if (MainStore.activeInterface === Enums.EInterface.info) {
+            return null
+        }
+
+        // Little hacky, but disable when routine starts
+        this.state.enabled &= MainStore.interfaceObs &&
+            (MainStore.interfaceObs.startTime === undefined || (Date.now() - MainStore.interfaceObs.startTime) / 1000 > MainStore.interfaceObs.routineLengthSeconds)
+
         if (this.state.enabled) {
             return (
                 <div className="overlayContainer">

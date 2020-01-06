@@ -3,6 +3,7 @@ const fetch = require("node-fetch")
 const fs = require("file-system")
 
 const EndpointStore = require("complete-judging-common/source/endpoints.js")
+const Common = require("complete-judging-common/source/common.js")
 
 
 class DataManager {
@@ -38,6 +39,8 @@ class DataManager {
                 this.saveTournamentDataToDisk()
             }, this.saveFrequencyMs - timeSinceLastSaveMs)
         }
+
+        this.dirtySinceLastAwsSync = true
     }
 
     saveTournamentDataToDisk() {
@@ -81,6 +84,7 @@ class DataManager {
             return response.json()
         }).then((response) => {
             this.tournamentData = response
+            this.tournamentData.lastAwsSyncTime = Date.now()
 
             this.onDataChanged()
 
@@ -90,7 +94,46 @@ class DataManager {
         })
     }
 
+    getExportData() {
+        let data = {}
+        data.tournamentKey = this.tournamentData.tournamentKey
+        data.poolMap = {}
+        data.resultsMap = {}
+
+        for (let key in data.tournamentKey) {
+            if (key.startsWith(Common.getPoolNamePrefix())) {
+                let poolKey = data.tournamentKey[key]
+                let poolData = this.tournamentData.poolMap[poolKey]
+                data.poolMap[poolKey] = poolData
+
+                for (let poolDataKey in poolData) {
+                    if (poolDataKey.startsWith(Common.getResultsKeyPrefix())) {
+                        let resultsKey = poolData[poolDataKey]
+                        data.resultsMap[resultsKey.judgeName] = data.resultsMap[resultsKey.judgeName] || {}
+                        data.resultsMap[resultsKey.judgeName][resultsKey.time] = this.tournamentData.resultsMap[resultsKey.judgeName][resultsKey.time]
+
+                        for (let timeKey in this.tournamentData.resultsMap[resultsKey.judgeName]) {
+                            if (timeKey >= this.tournamentData.lastAwsSyncTime) {
+                                data.resultsMap[resultsKey.judgeName][timeKey] = this.tournamentData.resultsMap[resultsKey.judgeName][timeKey]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return data
+    }
+
     exportTournamentDataToAWS(tournamentName) {
+        if (this.dirtySinceLastAwsSync !== true) {
+            return
+        }
+
+        let data = this.getExportData()
+
+        this.tournamentData.lastAwsSyncTime = Date.now()
+
         return fetch(EndpointStore.buildUrl(false, "EXPORT_TOURNAMENT_DATA", {
             tournamentName: tournamentName
         }), {
@@ -98,7 +141,7 @@ class DataManager {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(this.tournamentData)
+            body: JSON.stringify(data)
         }).catch((error) => {
             console.log("Export Tournament Data Error", error)
         })

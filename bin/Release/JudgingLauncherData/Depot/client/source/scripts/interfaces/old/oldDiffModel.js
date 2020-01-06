@@ -45,10 +45,6 @@ module.exports = class extends InterfaceModelBase {
 
     fillWithResults() {
         super.fillWithResults()
-
-        if (this.obs.results !== undefined) {
-            this.obs.currentTeamScore = this.obs.results.getDiffScore(this.getActiveTeamIndex())
-        }
     }
 
     createResultsData(results) {
@@ -58,8 +54,6 @@ module.exports = class extends InterfaceModelBase {
     setActiveScore(score) {
         if (this.obs.activeInputIndex !== undefined) {
             this.obs.results.setScore(this.getActiveTeamIndex(), this.obs.activeInputIndex, score)
-
-            this.obs.currentTeamScore = this.obs.results.getDiffScore(this.getActiveTeamIndex())
 
             this.reportScores()
 
@@ -73,8 +67,6 @@ module.exports = class extends InterfaceModelBase {
         this.obs.results.setConsec(this.getActiveTeamIndex(), blockIndex, isConsec)
 
         this.activateInputArray[blockIndex] = false
-
-        this.obs.currentTeamScore = this.obs.results.getDiffScore(this.getActiveTeamIndex())
 
         this.reportScores()
     }
@@ -92,8 +84,6 @@ module.exports = class extends InterfaceModelBase {
             this.obs.results.teamScoreList[this.getActiveTeamIndex()].scores[this.obs.editIndex] = score
 
             CommonAction.vibrateSingleMedium()
-
-            this.obs.currentTeamScore = this.obs.results.getDiffScore(this.getActiveTeamIndex())
 
             this.reportScores()
         }

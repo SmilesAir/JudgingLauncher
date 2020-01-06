@@ -48,7 +48,12 @@ router.post("/tournamentName/:tournamentName/exportTournamentDataToAWS", async (
 
 router.get("/tournamentName/:tournamentName/getPlayingPool", async (req, res) => {
     ++invokeCount
-    res.json(await Common.getActivePool(req.params.tournamentName, req.query.isAlt === "true"))
+    let pool = await Common.getActivePool(req.params.tournamentName, req.query.isAlt === "true")
+    if (pool !== undefined) {
+        res.json(pool)
+    } else {
+        res.status(201).send("Can't find pool.")
+    }
 })
 
 router.get("/tournamentName/:tournamentName/divisionIndex/:divisionIndex/roundIndex/:roundIndex/poolIndex/:poolIndex/getPoolResults", async (req, res) => {

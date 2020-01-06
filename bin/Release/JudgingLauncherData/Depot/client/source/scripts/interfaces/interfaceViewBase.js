@@ -1,5 +1,6 @@
 
 const React = require("react")
+const DataStore = require("scripts/stores/dataStore.js")
 const MainStore = require("scripts/stores/mainStore.js")
 const DataAction = require("scripts/actions/dataAction.js")
 
@@ -29,7 +30,7 @@ class InterfaceViewBase extends React.Component {
     getJudgeHeaderElement() {
         let timeString = `${DataAction.getTimeString(this.interface.getRoutineTimeMs() || 0)} / ${DataAction.getTimeString(this.interface.obs.routineLengthSeconds * 1000)}`
         let headerString = ` ${this.name} - ${MainStore.userId} - ${this.interface.isEditing() ? "EDITING" : timeString} - ${this.getTeamString()}`
-        let scoreString = `[${this.interface.getCurrentTeamScore().toFixed(2)}]`
+        let scoreString = DataStore.dataModel.getHeaderSummary(this.interface.obs.results, this.interface.getActiveTeamIndex()) || "[Missing]"
         return (
             <div className="judgeHeader">
                 <div className="scoreString">

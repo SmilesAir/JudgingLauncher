@@ -445,7 +445,7 @@ module.exports = @MobxReact.observer class ResultsView extends React.Component {
     getJudgeTypeName(type) {
         switch (type) {
         case Enums.EInterface.diff:
-            return "AI"
+            return "Diff"
         case Enums.EInterface.variety:
             return "Variety"
         case Enums.EInterface.exAi:

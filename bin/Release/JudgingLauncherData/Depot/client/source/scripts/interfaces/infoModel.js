@@ -119,19 +119,6 @@ module.exports = class extends InterfaceModelBase {
         })
     }
 
-    exportTournamentData() {
-        return CommonAction.fetchEx("REQUEST_EXPORT_TOURNAMENT_DATA", {
-            tournamentName: MainStore.tournamentName
-        }, undefined, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        }).catch((error) => {
-            console.log("Export Tournament Data Error", error)
-        })
-    }
-
     appendChild(parent, tagName) {
         let newNode = document.createElementNS(xmlNS, tagName)
 

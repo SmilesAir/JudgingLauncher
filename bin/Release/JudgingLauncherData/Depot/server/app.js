@@ -6,6 +6,7 @@ var logger = require('morgan');
 const cors = require("cors")
 
 const awsRouter = require('./routes/aws');
+const indexRouter = require('./routes/index');
 
 let stage = "DEVELOPMENT"
 for (let arg of process.argv) {
@@ -33,6 +34,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(logger('dev'));
 
 app.use('/', awsRouter);
+app.use('/', indexRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -1,4 +1,6 @@
 
+module.exports = require("./common.js")
+
 // Load specific platforms data harness
 let DataHarness = undefined
 try {
@@ -56,24 +58,18 @@ module.exports.getActivePool = async function(tournamentName, isAlt) {
     let poolKey = isAlt === true ? tournamentKey.playingPoolKeyAlt : tournamentKey.playingPoolKey
     if (poolKey !== undefined && poolKey !== null) {
         let pool = await Common.getPoolData(poolKey)
-        pool.serverTime = Date.now()
+        if (pool !== undefined) {
+            pool.serverTime = Date.now()
+        }
         return pool
     } else {
-        console.log("getactivepool error")
+        console.log(`Warning: [getActivePool]: Can't find pool for ${tournamentName} isAlt: ${isAlt}`)
     }
 }
 
 module.exports.getPoolData = async function(poolKey) {
     let poolItem = await DataHarness.getPoolItem(poolKey)
-    return poolItem.data
-}
-
-module.exports.getPoolNamePrefix = function() {
-    return "pool-"
-}
-
-module.exports.getResultsKeyPrefix = function() {
-    return "resultsKey-"
+    return poolItem !== undefined ? poolItem.data : undefined
 }
 
 module.exports.getPoolNameFromData = function(poolData) {

@@ -163,7 +163,7 @@
 
                         <Button Content="{Binding InstallNodeButtonString}" Click="InstallNodeButton_Click"/>
                         <Button Grid.Column="1" Content="{Binding InstallGitButtonString}" Click="InstallGitButton_Click"/>
-                        <Button Grid.Column="2" Content="Download Code" Click="DownloadDepotButton_Click"/>
+                        <Button Grid.Column="2" Content="{Binding DownloadCodeButtonString}" Click="DownloadDepotButton_Click" TextBlock.TextAlignment="Center"/>
                     </Grid>
 
                     <TextBox Grid.Row="1" AcceptsReturn="True" Text="{Binding SetupOutputText, UpdateSourceTrigger=PropertyChanged}"/>

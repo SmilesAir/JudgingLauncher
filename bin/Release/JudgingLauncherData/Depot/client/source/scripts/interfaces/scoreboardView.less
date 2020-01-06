@@ -14,18 +14,26 @@
     .headerRow {
         font-size: 2vw;
         font-weight: bold;
+
+        .center {
+            display: flex;
+            justify-content: center;
+        }
     }
 
     .rowContainer {
         display: grid;
         grid-template-areas:
-            "rank teamNames phraseCount unique diff variety ai ex score";
-        grid-template-columns: 1fr 5fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+            "rank teamNames diff variety ai ex score";
+        grid-template-columns: 1fr 7fr 1fr 1fr 1fr 1fr 1.3fr;
         grid-gap: 2px;
 
         .base {
+            display: flex;
             font-size: 3vw;
             box-shadow: 0px 0px 0px 2px burlywood;
+
+            justify-content: center;
         }
 
         .rank {
@@ -34,6 +42,8 @@
 
         .teamNames {
             .base;
+
+            justify-content: left;
         }
 
         .phraseCount {
@@ -67,52 +77,8 @@
 
     .rowContainerIncremental {
         grid-template-areas:
-            "rank teamNames phraseCount unique diff ex score";
-        grid-template-columns: 1fr 5fr 1fr 1fr 1fr 1fr 1fr;
-        grid-gap: 2px;
-    }
-
-    .rowOldContainer {
-        display: grid;
-        grid-template-areas:
-            "rank teamNames diff ai ex score";
-        grid-template-columns: 1fr 5fr 1fr 1fr 1fr 1fr;
-        grid-gap: 2px;
-
-        .base {
-            font-size: 3vw;
-            box-shadow: 0px 0px 0px 2px burlywood;
-        }
-
-        .rank {
-            .base;
-        }
-
-        .teamNames {
-            .base;
-        }
-
-        .diff {
-            .base;
-        }
-
-        .ai {
-            .base;
-        }
-
-        .ex {
-            .base;
-        }
-
-        .score {
-            .base;
-        }
-    }
-
-    .rowContainerOldIncremental {
-        grid-template-areas:
-            "rank teamNames ex";
-        grid-template-columns: 1fr 5fr 1fr;
+            "rank teamNames phraseCount unique diff ex";
+        grid-template-columns: 1fr 6fr 1fr 1fr 1fr 1fr;
         grid-gap: 2px;
     }
 

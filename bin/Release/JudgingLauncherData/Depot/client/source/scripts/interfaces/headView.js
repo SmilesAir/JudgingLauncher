@@ -5,6 +5,8 @@ const InterfaceViewBase = require("scripts/interfaces/interfaceViewBase.js")
 const Interfaces = require("scripts/interfaces/interfaces.js")
 const DataAction = require("scripts/actions/dataAction.js")
 const Enums = require("scripts/stores/enumStore.js")
+const ResultsView = require("scripts/views/resultsView.js")
+const MainStore = require("scripts/stores/mainStore.js")
 
 require("./headView.less")
 
@@ -166,8 +168,19 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
         return null
     }
 
+    getResultsElement(pool) {
+        if (pool === undefined || pool.results === undefined || !MainStore.lanMode) {
+            return null
+        }
+
+        return <ResultsView
+            resultsData={DataAction.getFullResultsProcessed(pool, this.obs.routineLengthSeconds)}
+            poolDesc={DataAction.getFullPoolDescription(pool)}/>
+    }
+
     render() {
-        if (this.interface.getPool(false) === undefined) {
+        let pool = this.interface.getPool(false)
+        if (pool === undefined) {
             return <div className="headTopContainer">Set playing pool for Head Judge to function</div>
         }
 
@@ -181,13 +194,9 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
                         Head Judge
                     </div>
                     <button className="passiveButton" onClick={() => this.onPassiveButtonClick()}>{this.obs.passiveMode ? "Disable Passive Mode" : "Enable Passive Mode"}</button>
-                    <button className="uploadScoreboardButton" onClick={() => this.interface.uploadIncrementalScoreboardData()}>Update Incremental Scoreboard</button>
-                    <button className="uploadScoreboardButton" onClick={() => this.interface.toggleAutoUpdateScoreboard()}>
-                        {this.obs.autoUpdateScoreboard ? `Disable Auto Update (${Math.round(this.obs.autoUpdateTimeRemaining / 1000)})` : "Enable Auto Update"}
-                    </button>
-                    <button className="uploadScoreboardButton" onClick={() => this.interface.finalizeScoreboardData()}>Finalize Scoreboard</button>
+                    <button className="uploadScoreboardButton" onClick={() => this.interface.toggleScoreboardIncremental()}>Toggle Scoreboard Finalized</button>
                 </div>
-                <div className="poolDetailsContainer">{DataAction.getFullPoolDescription(this.interface.getPool(false))}{altPoolName}</div>
+                <div className="poolDetailsContainer">{DataAction.getFullPoolDescription(pool)}{altPoolName}</div>
                 {this.getTimeElement()}
                 {this.getPlayingTeamElement()}
                 <button disabled={Interfaces.head.isDuringRoutineTime() || this.obs.playingTeamIndex === undefined} className="startButton" onClick={() => this.onStartButtonClick()}>
@@ -200,6 +209,7 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
                     {this.getTeamsElement()}
                     {this.getJudgesElement()}
                 </div>
+                {this.getResultsElement(pool)}
             </div>
         )
     }

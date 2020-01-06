@@ -25,7 +25,8 @@
 #tab2:checked ~ #content2,
 #tab3:checked ~ #content3,
 #tab4:checked ~ #content4,
-#tab5:checked ~ #content5 {
+#tab5:checked ~ #content5,
+#tab6:checked ~ #content6 {
     display: block;
 }
 
@@ -50,16 +51,6 @@
     margin-right: 10px;
 }
 
-.asdf {
-    table {
-        border-collapse: collapse;
-    }
-
-    table, th, tr, td {
-        border: 1px solid black;
-    }
-}
-
 .infoTabContent {
     display: none;
     padding: 20px 0 0;
@@ -82,7 +73,11 @@
         }
 
         .controls {
-            grid-area: controls
+            grid-area: controls;
+
+            .error {
+                background-color: salmon;
+            }
         }
 
         .teams {
@@ -98,13 +93,19 @@
             .clearResultsButton {
                 background-color: tomato;
             }
+
+            .error {
+                background-color: salmon;
+
+                padding: .5em;
+            }
         }
 
         .copyArea {
             position: fixed;
             left: 0;
             top: 0;
-            
+
             width: 0%;
             height: 0%;
         }
@@ -198,6 +199,20 @@
     }
 
     #content5 {
+        position: absolute;
+        left: 0;
+        top: 0;
+
+        .resultsTable {
+            page-break-before: always;
+        }
+    }
+
+    #content6 * {
+        visibility: visible;
+    }
+
+    #content6 {
         position: absolute;
         left: 0;
         top: 0;

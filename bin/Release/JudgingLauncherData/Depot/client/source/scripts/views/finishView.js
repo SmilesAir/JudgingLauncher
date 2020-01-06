@@ -55,7 +55,11 @@ require("./finishView.less")
     }
 
     getInputIndex() {
-        return this.state.editTeamIndex || MainStore.interfaceObs.playingTeamIndex
+        if (this.state.editTeamIndex !== undefined) {
+            return this.state.editTeamIndex
+        } else {
+            return MainStore.interfaceObs.playingTeamIndex
+        }
     }
 
     getInfo() {
@@ -124,6 +128,10 @@ require("./finishView.less")
     }
 
     render() {
+        if (Interfaces.activeInterface.showFinishOverlay !== true) {
+            return null
+        }
+
         if (MainStore.isFinishViewShowing) {
             return (
                 <div className="finishContainer">

@@ -30,11 +30,6 @@ module.exports = class extends InterfaceModelBase {
 
     fillWithResults() {
         super.fillWithResults()
-
-        let teamResults = this.getActiveResultsData()
-        if (teamResults !== undefined) {
-            this.obs.currentTeamScore = teamResults.getAiScore()
-        }
     }
 
     createResultsData(results) {
@@ -44,8 +39,6 @@ module.exports = class extends InterfaceModelBase {
     setAiScore(value, key) {
         let teamResults = this.getActiveResultsData()
         teamResults.setAiData(key, value)
-
-        this.obs.currentTeamScore = teamResults.getAiScore()
 
         this.reportScores()
     }

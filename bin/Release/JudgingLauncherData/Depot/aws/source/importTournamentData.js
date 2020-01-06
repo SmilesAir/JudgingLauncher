@@ -21,13 +21,13 @@ module.exports.handler = (e, c, cb) => { Common.handler(e, c, cb, async (event, 
         throw new Error(`Put tournament key. ${error}`)
     })
 
-    let putTournamentInfoParams = {
-        TableName : process.env.TOURNAMENT_INFO,
-        Item: data.tournamentInfo
-    }
-    await docClient.put(putTournamentInfoParams).promise().catch((error) => {
-        throw new Error(`Put tournament info. ${error}`)
-    })
+    // let putTournamentInfoParams = {
+    //     TableName : process.env.TOURNAMENT_INFO,
+    //     Item: data.tournamentInfo
+    // }
+    // await docClient.put(putTournamentInfoParams).promise().catch((error) => {
+    //     throw new Error(`Put tournament info. ${error}`)
+    // })
 
 
     let writePoolList = []

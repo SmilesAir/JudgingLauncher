@@ -422,7 +422,7 @@ function isSamePool(a, b) {
     if (a.divisionIndex === b.divisionIndex &&
         a.roundIndex === b.roundIndex &&
         a.poolIndex === b.poolIndex) {
-        
+
         return true
     }
 
@@ -435,7 +435,7 @@ function verifyDataModel(model) {
         model.verify === undefined ||
         model.getSummary === undefined ||
         model.getDefaultConstants === undefined) {
-        
+
         return false
     }
 
@@ -445,7 +445,6 @@ module.exports.verifyDataModel = verifyDataModel
 
 function verifyDataConstants(constants) {
     if (constants.name === undefined) {
-        
         return false
     }
 
@@ -522,3 +521,17 @@ function getResultsFilename(pool) {
     return `${getDivisionNameFromIndex(pool.divisionIndex)} ${getRoundNameFromIndex(pool.roundIndex)} ${getPoolNameFromIndex(pool.poolIndex)}`
 }
 module.exports.getResultsFilename = getResultsFilename
+
+function exportTournamentData() {
+    return CommonAction.fetchEx("REQUEST_EXPORT_TOURNAMENT_DATA", {
+        tournamentName: MainStore.tournamentName
+    }, undefined, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).catch((error) => {
+        console.log("Export Tournament Data Error", error)
+    })
+}
+module.exports.exportTournamentData = exportTournamentData

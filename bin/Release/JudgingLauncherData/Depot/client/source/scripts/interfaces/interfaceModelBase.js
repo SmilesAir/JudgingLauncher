@@ -21,8 +21,7 @@ class InterfaceModelBase {
             playingTeamIndex: undefined,
             editTeamIndex: undefined,
             backupModeEnabled: false,
-            results: undefined,
-            currentTeamScore: 0
+            results: undefined
         })
     }
 
@@ -55,6 +54,10 @@ class InterfaceModelBase {
     }
 
     updateFromAws(awsData) {
+        if (DataAction.isSamePool(this.obs.playingPool, awsData.pool) === false) {
+            location.reload(false)
+        }
+
         let poolDirty = this.playPoolHash !== awsData.poolHash
         let obsDirty = this.observableHash !== awsData.observableHash
         if (poolDirty) {
@@ -193,7 +196,9 @@ class InterfaceModelBase {
         }
 
         this.needShowFinishView = true
+        MainStore.interfaceObs.editTeamIndex = undefined
         MainStore.isRoutineTimeElapsed = false
+        MainStore.isFinishViewShowing = false
 
         this.sendState(Enums.EStatus.ready)
 
@@ -214,6 +219,7 @@ class InterfaceModelBase {
         this.onRoutineUpdate()
 
         MainStore.isRoutineTimeElapsed = false
+        this.needShowFinishView = false
     }
 
     hasRoutineTimeElapsed() {
@@ -237,15 +243,18 @@ class InterfaceModelBase {
         return undefined
     }
 
-    getCurrentTeamScore() {
-        return this.obs.currentTeamScore
-    }
-
     fillWithResults() {
         if (this.fillWithResultsFunc !== undefined) {
             this.fillWithResultsFunc()
         } else {
-            console.error(`${this.name} view missing fillWithResultsFunc`)
+            // Try again since view can still be starting up
+            setTimeout(() => {
+                if (this.fillWithResultsFunc !== undefined) {
+                    this.fillWithResultsFunc()
+                } else {
+                    console.error(`${this.name} view missing fillWithResultsFunc`)
+                }
+            }, 100)
         }
     }
 

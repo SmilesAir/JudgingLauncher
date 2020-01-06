@@ -12,7 +12,7 @@ module.exports.getDefaultConstants = function() {
         startCountPerSecond: 0.08,
         endCountPerSecond: 0.333,
         xScaler: 0.5,
-        baseScaler: 2
+        baseScaler: 1.5
     }
 }
 
@@ -161,8 +161,8 @@ function calcDeductions(data, phraseCount, routineLengthSeconds) {
 module.exports.getSummary = function(resultsData, teamIndex) {
     if (module.exports.verify(resultsData)) {
         let team = resultsData.teamScoreList[teamIndex]
-        let ai = calcAiScore(team).toFixed(2)
-        let ex = module.exports.getTotalDeductions(resultsData, teamIndex).toFixed(2)
+        let ai = calcAiScore(team).toFixed(1)
+        let ex = module.exports.getTotalDeductions(resultsData, teamIndex).toFixed(1)
         return `A: ${ai} E: ${ex}`
     }
 
@@ -170,7 +170,11 @@ module.exports.getSummary = function(resultsData, teamIndex) {
 }
 
 module.exports.getOverlaySummary = function(data) {
-    return ` [M: ${getMusic(data)}, T: ${getTeamwork(data)}, F: ${getForm(data)}, Ex: ${calcDeductions(data).toFixed(2)}, G: ${data.general}]`
+    return ` [M: ${getMusic(data)}, T: ${getTeamwork(data)}, F: ${getForm(data)}, G: ${data.general}, Total: ${calcAiScore(data).toFixed(1)}, Ex: ${calcDeductions(data).toFixed(1)}]`
+}
+
+module.exports.getHeaderSummary = function(data) {
+    return `[${calcDeductions(data).toFixed(1)}/${calcAiScore(data).toFixed(1)}]`
 }
 
 module.exports.getFullProcessed = function(data, preProcessedData) {
@@ -191,18 +195,18 @@ module.exports.getFullProcessed = function(data, preProcessedData) {
     }
 }
 
-module.exports.getIncrementalScoreboardProcessed = function(data, preProcessedData, processedData) {
-    processedData.rawEx = (processedData.rawEx || 0) + calcDeductions(data)
-    processedData.ex = (processedData.ex || 0) + calcDeductions(data, preProcessedData.totalPhraseCount / Math.max(1, preProcessedData.diffJudgeCount), preProcessedData.routineLengthSeconds)
-
-    return undefined
+module.exports.getIncrementalScoreboardProcessed = function(data, preProcessedData) {
+    return {
+        rawEx: calcDeductions(data),
+        ex: calcDeductions(data)
+    }
 }
 
-module.exports.getScoreboardProcessed = function(data, preProcessedData, processedData) {
-    processedData.ai = (processedData.ai || 0) + calcAiScore(data)
-    processedData.ex = (processedData.ex || 0) + calcDeductions(data, preProcessedData.totalPhraseCount / Math.max(1, preProcessedData.diffJudgeCount), preProcessedData.routineLengthSeconds)
-
-    return undefined
+module.exports.getScoreboardProcessed = function(data, preProcessedData) {
+    return {
+        rawEx: calcDeductions(data),
+        ex: calcDeductions(data)
+    }
 }
 
 module.exports.getCategoryResultsProcessed = function(data, preProcessedData, processedData) {

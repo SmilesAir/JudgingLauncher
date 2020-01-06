@@ -112,6 +112,17 @@ module.exports = class {
         return undefined
     }
 
+    getHeaderSummary(data, teamIndex) {
+        let model = this.getModel(data)
+        if (model !== undefined) {
+            if (model.getHeaderSummary !== undefined) {
+                return model.getHeaderSummary(data.teamScoreList[teamIndex])
+            }
+        }
+
+        return undefined
+    }
+
     getGeneralImpressionSummary(data, teamIndex) {
         let model = this.getModel(data)
         if (model !== undefined) {

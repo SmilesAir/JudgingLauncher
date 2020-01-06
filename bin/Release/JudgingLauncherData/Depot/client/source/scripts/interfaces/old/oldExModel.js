@@ -31,11 +31,6 @@ module.exports = class extends InterfaceModelBase {
 
     fillWithResults() {
         super.fillWithResults()
-
-        let teamResults = this.getActiveResultsData()
-        if (teamResults !== undefined) {
-            this.obs.currentTeamScore = teamResults.getExScore()
-        }
     }
 
     createResultsData(results) {
@@ -49,8 +44,6 @@ module.exports = class extends InterfaceModelBase {
         let newCount = teamResults.getPointCount(point) + 1
         teamResults.setPointCount(point, newCount)
 
-        this.obs.currentTeamScore = teamResults.getExScore()
-
         this.reportScores()
 
         return newCount
@@ -62,8 +55,6 @@ module.exports = class extends InterfaceModelBase {
         let teamResults = this.getActiveResultsData()
         let newCount = Math.max(0, teamResults.getPointCount(point) - 1)
         teamResults.setPointCount(point, newCount)
-
-        this.obs.currentTeamScore = teamResults.getExScore()
 
         this.reportScores()
 

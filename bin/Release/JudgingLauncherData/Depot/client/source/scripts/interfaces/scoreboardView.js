@@ -5,6 +5,7 @@ const InterfaceViewBase = require("scripts/interfaces/interfaceViewBase.js")
 const Interfaces = require("scripts/interfaces/interfaces.js")
 const MainStore = require("scripts/stores/mainStore.js")
 const CommonAction = require("scripts/actions/commonAction.js")
+const Enums = require("scripts/stores/enumStore.js")
 
 require("./scoreboardView.less")
 
@@ -18,36 +19,14 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
         this.interface = Interfaces.scoreboard
         this.obs = this.interface.obs
 
-        this.alwaysUpdate = MainStore.url.searchParams.get("alwaysUpdate") === "true"
-
-        this.queryResults()
+        this.obs.incremental = false
 
         setInterval(() => {
-            this.update()
-        }, 100)
+            this.forceUpdate()
+        }, 1000)
     }
 
-    update() {
-        if (this.nextQueryHandle === undefined) {
-            let timeoutMs = undefined
-            let secondsSinceStart = this.getSecondsSinceRoutineStart()
-            if (this.alwaysUpdate || secondsSinceStart < this.routineLengthSeconds + 600) {
-                timeoutMs = 1000
-            } else {
-                timeoutMs = 1000 * 60 * 5
-            }
-
-            this.nextQueryHandle = setTimeout(() => {
-                this.queryResults()
-
-                this.nextQueryHandle = undefined
-            }, timeoutMs)
-        }
-
-        this.forceUpdate()
-    }
-
-    queryResults() {
+    queryResultsS3() {
         CommonAction.fetchEx("GET_S3_RESULTS", {
             tournamentName: MainStore.tournamentName.replace(" ", "+")
         }, undefined, {
@@ -62,7 +41,7 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
         }).then((response) => {
             this.resultsData = response.data
             this.title = response.title
-            this.incremental = response.incremental
+            this.obs.incremental = response.incremental
             this.startTime = response.startTime
             this.routineLengthSeconds = response.routineLengthSeconds
         }).catch(() => {
@@ -73,13 +52,12 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
     getIncrementalHeaderRow() {
         return (
             <div key={0} className="rowContainer headerRow rowContainerIncremental">
-                <div>{"#"}</div>
+                <div className="center">{"#"}</div>
                 <div>{"Team"}</div>
-                <div>{"Phrases"}</div>
-                <div>{"Unique"}</div>
-                <div>{"Diff"}</div>
-                <div>{"Ex"}</div>
-                <div>{"Score"}</div>
+                <div className="center">{"Phrases"}</div>
+                <div className="center">{"Unique"}</div>
+                <div className="center">{"Diff"}</div>
+                <div className="center">{"Ex"}</div>
             </div>
         )
     }
@@ -87,20 +65,18 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
     getHeaderRow() {
         return (
             <div key={0} className="rowContainer headerRow">
-                <div>{"#"}</div>
+                <div className="center">{"#"}</div>
                 <div>{"Team"}</div>
-                <div>{"Phrases"}</div>
-                <div>{"Unique"}</div>
-                <div>{"Diff"}</div>
-                <div>{"Variety"}</div>
-                <div>{"AI"}</div>
-                <div>{"Ex"}</div>
-                <div>{"Score"}</div>
+                <div className="center">{"Diff"}</div>
+                <div className="center">{"Variety"}</div>
+                <div className="center">{"AI"}</div>
+                <div className="center">{"Ex"}</div>
+                <div className="center">{"Score"}</div>
             </div>
         )
     }
 
-    getIncrementalRow(rank, teamNames, phraseCount, unique, diff, ex, totalScore) {
+    getIncrementalRow(rank, teamNames, phraseCount, unique, diff, ex) {
         return (
             <div key={teamNames} className="rowContainer rowContainerIncremental">
                 <div className="rank">{rank}</div>
@@ -109,18 +85,15 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
                 <div className="unique">{unique}</div>
                 <div className="diff">{diff}</div>
                 <div className="ex">{ex}</div>
-                <div className="score">{totalScore}</div>
             </div>
         )
     }
 
-    getRow(rank, teamNames, phraseCount, unique, diff, variety, ai, ex, totalScore) {
+    getRow(rank, teamNames, diff, variety, ai, ex, totalScore) {
         return (
             <div key={teamNames} className="rowContainer">
                 <div className="rank">{rank}</div>
                 <div className="teamNames">{teamNames}</div>
-                <div className="phraseCount">{phraseCount}</div>
-                <div className="unique">{unique}</div>
                 <div className="diff">{diff}</div>
                 <div className="variety">{variety}</div>
                 <div className="ai">{ai}</div>
@@ -130,76 +103,50 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
         )
     }
 
-    getOldIncrementalHeaderRow() {
-        return (
-            <div key={0} className="rowOldContainer headerRow rowContainerOldIncremental">
-                <div>{"#"}</div>
-                <div>{"Team"}</div>
-                <div>{"Ex"}</div>
-            </div>
-        )
+    getPrettyDecimalValue(value, negative, decimalPlaces) {
+        return value !== undefined && value !== 0 ? (negative ? "-" : "") + value.toFixed(decimalPlaces || 1) : ""
     }
 
-    getOldHeaderRow() {
-        return (
-            <div key={0} className="rowOldContainer headerRow">
-                <div>{"#"}</div>
-                <div>{"Team"}</div>
-                <div>{"Diff"}</div>
-                <div>{"AI"}</div>
-                <div>{"Ex"}</div>
-                <div>{"Score"}</div>
-            </div>
-        )
-    }
+    getJudgeScoreSum(teamData, scoreName, judgeType) {
+        let sum = 0
+        for (let judgeName in teamData) {
+            let judgeData = teamData[judgeName]
+            if (judgeType === undefined || judgeData.type === judgeType) {
+                sum += judgeData[scoreName] || 0
+            }
+        }
 
-    getOldIncrementalRow(rank, teamNames, ex) {
-        return (
-            <div key={teamNames} className="rowOldContainer rowContainerOldIncremental">
-                <div className="rank">{rank}</div>
-                <div className="teamNames">{teamNames}</div>
-                <div className="ex">{ex}</div>
-            </div>
-        )
-    }
-
-    getOldRow(rank, teamNames, diff, ai, ex, totalScore) {
-        return (
-            <div key={teamNames} className="rowOldContainer">
-                <div className="rank">{rank}</div>
-                <div className="teamNames">{teamNames}</div>
-                <div className="diff">{diff}</div>
-                <div className="ai">{ai}</div>
-                <div className="ex">{ex}</div>
-                <div className="score">{totalScore}</div>
-            </div>
-        )
-    }
-
-    getPrettyDecimalValue(value, negative) {
-        return value !== undefined && value !== 0 ? (negative ? "-" : "") + value.toFixed(2) : ""
+        return sum
     }
 
     getBoard(data) {
         let rowList = []
 
-        if (data.length > 0 && data[0].data.unique !== undefined) {
-            rowList.push(this.incremental ? this.getIncrementalHeaderRow() : this.getHeaderRow())
-        } else {
-            rowList.push(this.incremental ? this.getOldIncrementalHeaderRow() : this.getOldHeaderRow())
+        if (data.length > 0) {
+            rowList.push(this.obs.incremental ? this.getIncrementalHeaderRow() : this.getHeaderRow())
         }
 
+        let playNumber = 1
         for (let rowData of data) {
             let teamData = rowData.data
-            if (teamData.unique !== undefined) {
-                rowList.push(this.incremental ?
-                    this.getIncrementalRow(rowData.data.rank, rowData.teamNames, teamData.phrases, teamData.unique, this.getPrettyDecimalValue(teamData.diff), this.getPrettyDecimalValue(teamData.ex, true), this.getPrettyDecimalValue(teamData.totalScore)) :
-                    this.getRow(rowData.data.rank, rowData.teamNames, teamData.phrases, teamData.unique, this.getPrettyDecimalValue(teamData.diff), this.getPrettyDecimalValue(teamData.variety), this.getPrettyDecimalValue(teamData.ai), this.getPrettyDecimalValue(teamData.ex, true), this.getPrettyDecimalValue(teamData.totalScore)))
+            let diff = this.getJudgeScoreSum(teamData, "score", Enums.EInterface.diff)
+            let ex = this.getJudgeScoreSum(teamData, "adjustedEx")
+
+            if (this.obs.incremental) {
+                let phrases = this.getJudgeScoreSum(teamData, "phrases")
+                let unique = this.getJudgeScoreSum(teamData, "quantity")
+
+                rowList.push(this.getIncrementalRow(playNumber, rowData.teamNames, phrases, unique, this.getPrettyDecimalValue(diff), this.getPrettyDecimalValue(ex, true)))
             } else {
-                rowList.push(this.incremental ?
-                    this.getOldIncrementalRow(rowData.data.rank, rowData.teamNames, this.getPrettyDecimalValue(teamData.ex)) :
-                    this.getOldRow(rowData.data.rank, rowData.teamNames, this.getPrettyDecimalValue(teamData.diff), this.getPrettyDecimalValue(teamData.ai), this.getPrettyDecimalValue(teamData.ex), this.getPrettyDecimalValue(teamData.totalScore)))
+                let variety = this.getJudgeScoreSum(teamData, "score", Enums.EInterface.variety)
+                let ai = this.getJudgeScoreSum(teamData, "aI")
+
+                rowList.push(this.getRow(rowData.rank, rowData.teamNames, this.getPrettyDecimalValue(diff),
+                    this.getPrettyDecimalValue(variety), this.getPrettyDecimalValue(ai),
+                    this.getPrettyDecimalValue(ex, true), this.getPrettyDecimalValue(rowData.totalScore, false, 2)))
             }
+
+            ++playNumber
         }
 
         return rowList
@@ -211,8 +158,8 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
     }
 
     getSecondsSinceRoutineStart() {
-        if (this.startTime !== undefined) {
-            return (Date.now() - this.startTime) / 1000
+        if (this.obs.startTime !== undefined) {
+            return (Date.now() - this.obs.startTime) / 1000
         }
 
         return undefined
@@ -221,16 +168,16 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
     getTitleString() {
         let secondsSinceStart = this.getSecondsSinceRoutineStart()
         let routineTimeStr = ""
-        if (secondsSinceStart < this.routineLengthSeconds) {
-            let secondsRemaining = Math.round(this.routineLengthSeconds - secondsSinceStart)
+        if (secondsSinceStart < this.obs.routineLengthSeconds) {
+            let secondsRemaining = Math.round(this.obs.routineLengthSeconds - secondsSinceStart)
             routineTimeStr = ` [${Math.floor(secondsRemaining / 60)}:${`${secondsRemaining % 60}`.padStart(2, "0")}]`
         }
 
-        return (this.incremental ? "[Ex Only] " : "") + this.title + routineTimeStr
+        return (this.obs.incremental ? "[Partial] " : "") + this.obs.title + routineTimeStr
     }
 
     render() {
-        if (this.resultsData === undefined) {
+        if (this.obs.resultsData === undefined) {
             return <div>No Scoreboard Data</div>
         }
 
@@ -246,7 +193,7 @@ module.exports = @MobxReact.observer class extends InterfaceViewBase {
                         {this.getTimeString()}
                     </div>
                 </div>
-                {this.getBoard(this.resultsData)}
+                {this.getBoard(this.obs.resultsData)}
             </div>
         )
     }

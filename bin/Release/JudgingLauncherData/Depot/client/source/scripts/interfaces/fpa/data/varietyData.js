@@ -74,6 +74,12 @@ module.exports.getOverlaySummary = function(data) {
     return ` [Quantity: ${data.quantityScore}, Quality: ${data.qualityScore}, G: ${data.general}]`
 }
 
+module.exports.getHeaderSummary = function(data) {
+    return `[${calcScore(data, {
+        routineLengthSeconds: MainStore.interfaceObs.routineLengthSeconds
+    }).toFixed(1)}]`
+}
+
 function calcScore(data, preProcessedData) {
     let constants = MainStore.constants.variety
     let base = preProcessedData.routineLengthSeconds * constants.basePerSecond
@@ -90,15 +96,17 @@ module.exports.getFullProcessed = function(data, preProcessedData) {
     }
 }
 
-module.exports.getIncrementalScoreboardProcessed = function(data, preProcessedData, processedData) {
-    processedData.unique = Math.round(preProcessedData.totalQuantityCount / preProcessedData.varietyJudgeCount)
+module.exports.getIncrementalScoreboardProcessed = function(data, preProcessedData) {
+    return {
+        unique: preProcessedData.totalQuantityCount
+    }
 }
 
-module.exports.getScoreboardProcessed = function(data, preProcessedData, processedData) {
-    processedData.unique = Math.round(preProcessedData.totalQuantityCount / preProcessedData.varietyJudgeCount)
-    processedData.variety = (processedData.variety || 0) + calcScore(data, preProcessedData)
-
-    return undefined
+module.exports.getScoreboardProcessed = function(data, preProcessedData) {
+    return {
+        unique: preProcessedData.totalQuantityCount,
+        variety: calcScore(data, preProcessedData)
+    }
 }
 
 module.exports.getCategoryResultsProcessed = function(data, preProcessedData, processedData) {

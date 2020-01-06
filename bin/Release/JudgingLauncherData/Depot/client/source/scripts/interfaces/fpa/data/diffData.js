@@ -10,12 +10,12 @@ const DataBase = require("scripts/stores/dataBase.js")
 const epsilon = .01
 
 module.exports.getDefaultConstants = function() {
-    // https://www.desmos.com/calculator/j95pbtu7kt
+    // https://www.desmos.com/calculator/fcipcuyc8f
     return {
         name: "diff",
         offset: 0,
         power: 1.5,
-        scale: .45,
+        scale: .5,
         topPerSecond: .066667,
         gradientLines: [
             {
@@ -107,7 +107,11 @@ module.exports.getSummary = function(resultsData, teamIndex) {
 }
 
 module.exports.getOverlaySummary = function(data) {
-    return ` [Phrases: ${getPhraseCount(data.scores)}, Raw: ${getAverage(data.scores, data.scores.length, false).toFixed(2)}, G: ${data.general}]`
+    return ` [Phrases: ${getPhraseCount(data.scores)}, Raw: ${getAverage(data.scores, data.scores.length, false).toFixed(1)}, G: ${data.general}]`
+}
+
+module.exports.getHeaderSummary = function(data) {
+    return `[${getAverage(data.scores, data.scores.length, false).toFixed(1)}]`
 }
 
 function getAverage(scores, count, adjusted) {
@@ -241,15 +245,15 @@ module.exports.getFullProcessed = function(data, preProcessedData) {
     }
 }
 
-module.exports.getIncrementalScoreboardProcessed = function(data, preProcessedData, processedData) {
-    return module.exports.getScoreboardProcessed(data, preProcessedData, processedData)
+module.exports.getIncrementalScoreboardProcessed = function(data, preProcessedData) {
+    return module.exports.getScoreboardProcessed(data, preProcessedData)
 }
 
-module.exports.getScoreboardProcessed = function(data, preProcessedData, processedData) {
-    processedData.phrases = Math.round(preProcessedData.totalPhraseCount / preProcessedData.diffJudgeCount)
-    processedData.diff = (processedData.diff || 0) + getGradientScore(data, true, preProcessedData.routineLengthSeconds)
-
-    return undefined
+module.exports.getScoreboardProcessed = function(data, preProcessedData) {
+    return {
+        phrases: preProcessedData.totalPhraseCount,
+        diff: getGradientScore(data, true, preProcessedData.routineLengthSeconds)
+    }
 }
 
 module.exports.getCategoryResultsProcessed = function(data, preProcessedData, processedData) {
