@@ -769,7 +769,7 @@ namespace JudgingLauncher
 			{
 				if (IsProduction)
 				{
-					url = "https://d5rsjgoyn07f8.cloudfront.net/index.html";
+					url = "https://www.freestylejudge.com/index.html";
 				}
 				else
 				{
