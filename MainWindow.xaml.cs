@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using ZXing;
+using ZXing.Presentation;
 using ZXing.QrCode;
 
 namespace JudgingLauncher
@@ -885,18 +887,10 @@ namespace JudgingLauncher
 				judgeLinkObjects[i].qrCodeImage.Visibility = Visibility.Visible;
 				judgeLinkObjects[i].qrCodeLabel.Visibility = Visibility.Visible;
 
-				using (var bitmap = barcodeWriter.Write(link))
-				using (var stream = new MemoryStream())
+				WriteableBitmap wb = barcodeWriter.Write(link);
+				using (MemoryStream stream = new MemoryStream())
 				{
-					bitmap.Save(stream, ImageFormat.Png);
-
-					BitmapImage bi = new BitmapImage();
-					bi.BeginInit();
-					stream.Seek(0, SeekOrigin.Begin);
-					bi.StreamSource = stream;
-					bi.CacheOption = BitmapCacheOption.OnLoad;
-					bi.EndInit();
-					judgeLinkObjects[i].qrCodeImage.Source = bi;
+					judgeLinkObjects[i].qrCodeImage.Source = wb;
 				}
 			}
 		}
