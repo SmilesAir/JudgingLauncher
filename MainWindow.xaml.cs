@@ -821,8 +821,8 @@ namespace JudgingLauncher
 				interfaceNameMap.Add("diff");
 
 				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Ex/Ai 1";
-				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton2.Content = "Variety 1";
-				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton4.Content = "Diff 1";
+				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton1.Content = "Variety 1";
+				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton2.Content = "Diff 1";
 			}
 			else if (judgeCount == 6)
 			{
