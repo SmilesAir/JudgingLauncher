@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetFwTypeLib;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -43,9 +44,10 @@ namespace JudgingLauncher
 		}
 
 		const string dataFolderPath = "JudgingLauncherData";
-		const string nodeInstallerFilename = "node-v12.13.1-x64.msi";
+		const string nodeInstallerFilename = "node-v14.17.5-x64.msi";
 		const string gitInstallerFilename = "Git-2.24.0.2-64-bit.exe";
 		const string depotCloneUrl = "https://github.com/SmilesAir/CompleteJudging.git";
+		const string openFirewallPortsFilename = "OpenFirewallPorts.ps1";
 		public string InstallNodeButtonString
 		{
 			get { return installNodeButtonString; }
@@ -201,6 +203,31 @@ namespace JudgingLauncher
 			}
 		}
 		string judgeCountSelectedItem = "";
+		public ObservableCollection<string> DefaultLanguageOptions
+		{
+			get { return defaultLanguageOptions; }
+			set
+			{
+				defaultLanguageOptions = value;
+				OnPropertyChanged("DefaultLanguageOptions");
+			}
+		}
+		ObservableCollection<string> defaultLanguageOptions = new ObservableCollection<string>() { "English", "Spanish" };
+		public string DefaultLanguageSelectedItem
+		{
+			get { return defaultLanguageSelectedItem; }
+			set
+			{
+				defaultLanguageSelectedItem = value;
+				OnPropertyChanged("DefaultLanguageSelectedItem");
+
+				Properties.Settings.Default.DefaultLanguageSelectedItem = value;
+				Properties.Settings.Default.Save();
+
+				SetupLinks();
+			}
+		}
+		string defaultLanguageSelectedItem = "";
 		List<JudgeLinkObjects> judgeLinkObjects = new List<JudgeLinkObjects>();
 
 
@@ -313,6 +340,7 @@ namespace JudgingLauncher
 			ServerSelectedItem = Properties.Settings.Default.ServerSelectedItem;
 			LanModeSelectedItem = Properties.Settings.Default.LanModeSelectedItem;
 			JudgeCountSelectedItem = Properties.Settings.Default.JudgeCountSelectedItem;
+			DefaultLanguageSelectedItem = Properties.Settings.Default.DefaultLanguageSelectedItem;
 			SelectedTabIndex = Properties.Settings.Default.SelectedTabIndex;
 
 			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton0, QrCodeImage0, QrCodeLabel0));
@@ -327,7 +355,8 @@ namespace JudgingLauncher
 
 			SetupLinks();
 
-			new Thread(() => {
+			new Thread(() =>
+			{
 				bool isNodeInstalled = CheckNodeInstalled();
 				bool isGitInstalled = CheckGitInstalled();
 
@@ -439,8 +468,20 @@ namespace JudgingLauncher
 			}
 			else
 			{
-				string gitCommand = "pull";
+				string gitCommand = "reset --hard";
 				Process gitProcess = new Process();
+				gitProcess.StartInfo.FileName = "git";
+				gitProcess.StartInfo.WorkingDirectory = completeJudgingDepot;
+				gitProcess.StartInfo.Arguments = gitCommand;
+				gitProcess.StartInfo.RedirectStandardOutput = true;
+				gitProcess.StartInfo.CreateNoWindow = true;
+				gitProcess.StartInfo.UseShellExecute = false;
+				gitProcess.Start();
+
+				gitProcess.WaitForExit();
+				SetupOutputText += gitProcess.StandardOutput.ReadToEnd();
+
+				gitCommand = "pull";
 				gitProcess.StartInfo.FileName = "git";
 				gitProcess.StartInfo.WorkingDirectory = completeJudgingDepot;
 				gitProcess.StartInfo.Arguments = gitCommand;
@@ -489,14 +530,17 @@ namespace JudgingLauncher
 			cmd.WaitForExit();
 
 			string output = cmd.StandardOutput.ReadToEnd();
-			return output.Contains("Usage: npm <command>");
+			return output.Contains("npm install");
 		}
 
 		private void CheckNodeAndInstall()
 		{
 			if (MessageBox.Show("Click OK to install Node.js", "Attention", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
 			{
-				Process.Start(nodeInstallerFilename).WaitForExit();
+				ProcessStartInfo info = new ProcessStartInfo();
+				info.UseShellExecute = true;
+				info.FileName = nodeInstallerFilename;
+				Process.Start(info).WaitForExit();
 
 				Restart();
 			}
@@ -526,15 +570,50 @@ namespace JudgingLauncher
 		{
 			if (MessageBox.Show("Click OK to install Git", "Attention", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
 			{
-				Process.Start(gitInstallerFilename).WaitForExit();
+				ProcessStartInfo info = new ProcessStartInfo();
+				info.UseShellExecute = true;
+				info.FileName = gitInstallerFilename;
+				Process.Start(info).WaitForExit();
 
 				Restart();
 			}
 		}
 
+		private bool IsFirewallPortsOpen()
+		{
+			Process netshProcess = new Process();
+			netshProcess.StartInfo.FileName = "netsh";
+			netshProcess.StartInfo.Arguments = "advfirewall firewall show rule CompleteJudging";
+			netshProcess.StartInfo.RedirectStandardOutput = true;
+			netshProcess.StartInfo.CreateNoWindow = true;
+			netshProcess.StartInfo.UseShellExecute = false;
+			netshProcess.Start();
+
+			netshProcess.WaitForExit();
+			string output = netshProcess.StandardOutput.ReadToEnd();
+			if (output.Contains("No rules match the specified criteria"))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private void OpenFirewallPorts()
+		{
+			if (!IsFirewallPortsOpen())
+			{
+				ProcessStartInfo info = new ProcessStartInfo();
+				info.UseShellExecute = true;
+				info.FileName = "powershell";
+				info.Arguments = Path.Combine(Environment.CurrentDirectory, openFirewallPortsFilename);
+				Process.Start(info).WaitForExit();
+			}
+		}
+
 		private void Restart()
 		{
-			System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
+			Process.Start(Process.GetCurrentProcess().MainModule.FileName);
 			Application.Current.Shutdown();
 		}
 
@@ -697,6 +776,8 @@ namespace JudgingLauncher
 		{
 			KillAllProcesses();
 
+			OpenFirewallPorts();
+
 			StartClient();
 
 			if (IsLanMode)
@@ -782,6 +863,7 @@ namespace JudgingLauncher
 			url += "?startup=" + interfaceName + "&tournamentName=" + TournamentName;
 			url += judgeIndex.Length > 0 ? "&judgeIndex=" + judgeIndex : "";
 			url += IsLanMode ? "&lanMode=true&serverIp=" + LanModeSelectedItem.Replace(".", "_") : "";
+			url += "&lang=" + DefaultLanguageSelectedItem;
 
 			return url;
 		}

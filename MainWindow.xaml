@@ -29,6 +29,7 @@
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto" MinHeight="40"/>
                         </Grid.RowDefinitions>
 
@@ -47,7 +48,10 @@
                         <Label Grid.Row="4" Content="Judges Count"/>
                         <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding JudgeCountOptions}" SelectedItem="{Binding JudgeCountSelectedItem}"/>
 
-                        <Button Grid.Row="5" Grid.ColumnSpan="2" Click="LaunchButton_Click" Content="Launch"/>
+                        <Label Grid.Row="5" Content="Default Language"/>
+                        <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding DefaultLanguageOptions}" SelectedItem="{Binding DefaultLanguageSelectedItem}"/>
+
+                        <Button Grid.Row="6" Grid.ColumnSpan="2" Click="LaunchButton_Click" Content="Launch"/>
                     </Grid>
 
                     <Label Grid.Row="1" Content="Copy Links To Clipboard Below" HorizontalContentAlignment="Center"/>
@@ -160,8 +164,8 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-
-                        <Button Content="{Binding InstallNodeButtonString}" Click="InstallNodeButton_Click"/>
+                        
+                        <Button Grid.Column="0" Content="{Binding InstallNodeButtonString}" Click="InstallNodeButton_Click"/>
                         <Button Grid.Column="1" Content="{Binding InstallGitButtonString}" Click="InstallGitButton_Click"/>
                         <Button Grid.Column="2" Content="{Binding DownloadCodeButtonString}" Click="DownloadDepotButton_Click" TextBlock.TextAlignment="Center"/>
                     </Grid>
