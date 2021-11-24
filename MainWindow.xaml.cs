@@ -530,7 +530,7 @@ namespace JudgingLauncher
 			cmd.WaitForExit();
 
 			string output = cmd.StandardOutput.ReadToEnd();
-			return output.Contains("npm install");
+			return !output.Contains("not recognized");
 		}
 
 		private void CheckNodeAndInstall()
