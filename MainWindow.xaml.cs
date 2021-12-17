@@ -4,23 +4,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing.Imaging;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Threading;
 using ZXing;
 using ZXing.Presentation;
@@ -603,11 +593,25 @@ namespace JudgingLauncher
 		{
 			if (!IsFirewallPortsOpen())
 			{
-				ProcessStartInfo info = new ProcessStartInfo();
-				info.UseShellExecute = true;
-				info.FileName = "powershell";
-				info.Arguments = Path.Combine(Environment.CurrentDirectory, openFirewallPortsFilename);
-				Process.Start(info).WaitForExit();
+				//ProcessStartInfo info = new ProcessStartInfo();
+				//info.UseShellExecute = true;
+				//info.FileName = "powershell";
+				//info.Arguments = Path.Combine(Environment.CurrentDirectory, openFirewallPortsFilename);
+				//Process.Start(info).WaitForExit();
+
+				INetFwRule firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule"));
+				firewallRule.Action = NET_FW_ACTION_.NET_FW_ACTION_ALLOW;
+				firewallRule.Description = "For Frisbee Judging";
+				firewallRule.Direction = NET_FW_RULE_DIRECTION_.NET_FW_RULE_DIR_IN;
+				firewallRule.Enabled = true;
+				firewallRule.InterfaceTypes = "All";
+				firewallRule.Name = "CompleteJudging";
+				firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;
+				firewallRule.LocalPorts = "3000,8080";
+
+				INetFwPolicy2 firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(
+					Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
+				firewallPolicy.Rules.Add(firewallRule);
 			}
 		}
 

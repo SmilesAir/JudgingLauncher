@@ -19,7 +19,9 @@ Thumbs.db
 *.lib
 *.sbr
 obj/
-bin/Debug/
-bin/Release/JudgingeLauncherData/
+bin/
+JudgingLauncher-windows/
+JudgingLauncher-mac/
+JudgingLauncher-windows.zip
 
 .vs/
