@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Printing;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -342,6 +343,15 @@ namespace JudgingLauncher
 			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton6, QrCodeImage6, QrCodeLabel6));
 			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton7, QrCodeImage7, QrCodeLabel7));
 			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton8, QrCodeImage8, QrCodeLabel8));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton9, QrCodeImage9, QrCodeLabel9));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton10, QrCodeImage10, QrCodeLabel10));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton11, QrCodeImage11, QrCodeLabel11));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton12, QrCodeImage12, QrCodeLabel12));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton13, QrCodeImage13, QrCodeLabel13));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton14, QrCodeImage14, QrCodeLabel14));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton15, QrCodeImage15, QrCodeLabel15));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton16, QrCodeImage16, QrCodeLabel16));
+			judgeLinkObjects.Add(new JudgeLinkObjects(LinkButton17, QrCodeImage17, QrCodeLabel17));
 
 			SetupLinks();
 
@@ -841,7 +851,7 @@ namespace JudgingLauncher
 			DownloadDepot();
 		}
 
-		private string GetLink(string interfaceName, string judgeIndex)
+		private string GetLink(string interfaceName, string judgeIndex, bool isAlt = false)
 		{
 			string url = "";
 			if (ServerSelectedItem == "Localhost")
@@ -868,6 +878,7 @@ namespace JudgingLauncher
 			url += judgeIndex.Length > 0 ? "&judgeIndex=" + judgeIndex : "";
 			url += IsLanMode ? "&lanMode=true&serverIp=" + LanModeSelectedItem.Replace(".", "_") : "";
 			url += "&lang=" + DefaultLanguageSelectedItem;
+			url += isAlt ? "&alt=true" : "";
 
 			return url;
 		}
@@ -898,60 +909,19 @@ namespace JudgingLauncher
 				obj.qrCodeLabel.Visibility = Visibility.Collapsed;
 			}
 
-			List<string> interfaceNameMap = new List<string>();
+			string[] interfaceNames = new string[]
+				{
+					"exAi",
+					"variety",
+					"diff"
+				};
 
-			if (judgeCount == 3)
-			{
-				interfaceNameMap.Add("exAi");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("diff");
-
-				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Ex/Ai 1";
-				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton1.Content = "Variety 1";
-				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton2.Content = "Diff 1";
-			}
-			else if (judgeCount == 6)
-			{
-				interfaceNameMap.Add("exAi");
-				interfaceNameMap.Add("exAi");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("diff");
-
-				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Ex/Ai 1";
-				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton1.Content = "Ex/Ai 2";
-				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton2.Content = "Variety 1";
-				judgeLinkObjects[3].qrCodeLabel.Content = LinkButton3.Content = "Variety 2";
-				judgeLinkObjects[4].qrCodeLabel.Content = LinkButton4.Content = "Diff 1";
-				judgeLinkObjects[5].qrCodeLabel.Content = LinkButton5.Content = "Diff 2";
-			}
-			else if (judgeCount == 9)
-			{
-				interfaceNameMap.Add("exAi");
-				interfaceNameMap.Add("exAi");
-				interfaceNameMap.Add("exAi");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("variety");
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("diff");
-				interfaceNameMap.Add("diff");
-
-				judgeLinkObjects[0].qrCodeLabel.Content = LinkButton0.Content = "Ex/Ai 1";
-				judgeLinkObjects[1].qrCodeLabel.Content = LinkButton1.Content = "Ex/Ai 2";
-				judgeLinkObjects[2].qrCodeLabel.Content = LinkButton2.Content = "Ex/Ai 3";
-				judgeLinkObjects[3].qrCodeLabel.Content = LinkButton3.Content = "Variety 1";
-				judgeLinkObjects[4].qrCodeLabel.Content = LinkButton4.Content = "Variety 2";
-				judgeLinkObjects[5].qrCodeLabel.Content = LinkButton5.Content = "Variety 3";
-				judgeLinkObjects[6].qrCodeLabel.Content = LinkButton6.Content = "Diff 1";
-				judgeLinkObjects[7].qrCodeLabel.Content = LinkButton7.Content = "Diff 2";
-				judgeLinkObjects[8].qrCodeLabel.Content = LinkButton8.Content = "Diff 3";
-			}
-
-			LinkButtonInfo.Tag = GetLink("info", "");
-			LinkButtonHead.Tag = GetLink("head", "");
-			LinkButtonScoreboard.Tag = GetLink("scoreboard", "");
+			string[] labelNames = new string[]
+				{
+					"Ex/Ai",
+					"Variety",
+					"Diff"
+				};
 
 			QRCodeWriter qrCode = new QRCodeWriter();
 			BarcodeWriter barcodeWriter = new BarcodeWriter
@@ -965,20 +935,41 @@ namespace JudgingLauncher
 				}
 			};
 
-			for (int i = 0; i < judgeCount; ++i)
+			for (int altIndex = 0; altIndex < 2; ++altIndex)
 			{
-				string link = GetLink(interfaceNameMap[i], i.ToString());
-				judgeLinkObjects[i].linkButton.Tag = link;
-				judgeLinkObjects[i].linkButton.Visibility = Visibility.Visible;
-				judgeLinkObjects[i].qrCodeImage.Visibility = Visibility.Visible;
-				judgeLinkObjects[i].qrCodeLabel.Visibility = Visibility.Visible;
-
-				WriteableBitmap wb = barcodeWriter.Write(link);
-				using (MemoryStream stream = new MemoryStream())
+				bool isAlt = altIndex > 0;
+				for (int nameIndex = 0; nameIndex < interfaceNames.Length; ++nameIndex)
 				{
-					judgeLinkObjects[i].qrCodeImage.Source = wb;
+					string interfaceName = interfaceNames[nameIndex];
+					string labelName = (isAlt ? "Alt " : "") + labelNames[nameIndex];
+					for (int i = 0; i < judgeCount / 3; ++i)
+					{
+						string link = GetLink(interfaceName, i.ToString(), isAlt);
+						int index = i * 3 + nameIndex + (isAlt ? 9 : 0);
+
+						var qrCodeLabel = judgeLinkObjects[index].qrCodeLabel;
+						qrCodeLabel.Content = labelName + $" {i + 1}";
+						qrCodeLabel.Visibility = Visibility.Visible;
+
+						var qrCodeImage = judgeLinkObjects[index].qrCodeImage;
+						qrCodeImage.Visibility = Visibility.Visible;
+						WriteableBitmap wb = barcodeWriter.Write(link);
+						using (MemoryStream stream = new MemoryStream())
+						{
+							qrCodeImage.Source = wb;
+						}
+
+						var linkButton = judgeLinkObjects[index].linkButton;
+						linkButton.Content = labelName + $" {i + 1}";
+						linkButton.Tag = link;
+						linkButton.Visibility = Visibility.Visible;
+					}
 				}
 			}
+
+			LinkButtonInfo.Tag = GetLink("info", "");
+			LinkButtonHead.Tag = GetLink("head", "");
+			LinkButtonScoreboard.Tag = GetLink("scoreboard", "");
 		}
 
 		private void BackupAndResetServerButton_Click(object sender, RoutedEventArgs e)
@@ -1011,8 +1002,20 @@ namespace JudgingLauncher
 		{
 			PrintDialog dlg = new PrintDialog();
 			dlg.PrintTicket.PageOrientation = System.Printing.PageOrientation.Portrait;
-			dlg.ShowDialog();
-			dlg.PrintVisual(QrCodesGrid, "Printing");
+			if (dlg.ShowDialog() == true)
+			{
+				dlg.PrintVisual(QrCodesGrid, "Printing");
+			}
+		}
+
+		private void PrintAltQrCodesButton_Click(object sender, RoutedEventArgs e)
+		{
+			PrintDialog dlg = new PrintDialog();
+			dlg.PrintTicket.PageOrientation = System.Printing.PageOrientation.Portrait;
+			if (dlg.ShowDialog() == true)
+			{
+				dlg.PrintVisual(AltQrCodesGrid, "Printing");
+			}
 		}
 	}
 
