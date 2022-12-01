@@ -937,6 +937,7 @@ namespace JudgingLauncher
 
 			for (int altIndex = 0; altIndex < 2; ++altIndex)
 			{
+				int judgeIndex = 0;
 				bool isAlt = altIndex > 0;
 				for (int nameIndex = 0; nameIndex < interfaceNames.Length; ++nameIndex)
 				{
@@ -944,7 +945,7 @@ namespace JudgingLauncher
 					string labelName = (isAlt ? "Alt " : "") + labelNames[nameIndex];
 					for (int i = 0; i < judgeCount / 3; ++i)
 					{
-						string link = GetLink(interfaceName, i.ToString(), isAlt);
+						string link = GetLink(interfaceName, judgeIndex.ToString(), isAlt);
 						int index = i * 3 + nameIndex + (isAlt ? 9 : 0);
 
 						var qrCodeLabel = judgeLinkObjects[index].qrCodeLabel;
@@ -963,6 +964,8 @@ namespace JudgingLauncher
 						linkButton.Content = labelName + $" {i + 1}";
 						linkButton.Tag = link;
 						linkButton.Visibility = Visibility.Visible;
+
+						++judgeIndex;
 					}
 				}
 			}
