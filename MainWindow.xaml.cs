@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Printing;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -832,6 +833,41 @@ namespace JudgingLauncher
 			}
 		}
 
+		private void KillServerOnly()
+		{
+			AttachConsole((uint)serverProcess.Id);
+			SetConsoleCtrlHandler(null, true);
+			GenerateConsoleCtrlEvent(0, 0);
+
+			serverProcess.WaitForExit(2000);
+
+			FreeConsole();
+
+			SetConsoleCtrlHandler(null, false);
+
+			if (serverProcess != null)
+			{
+				serverProcess.Close();
+			}
+		}
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		static extern bool AttachConsole(uint dwProcessId);
+
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		static extern bool FreeConsole();
+
+		// Delegate type to be used as the Handler Routine for SCCH
+		delegate Boolean ConsoleCtrlDelegate(int CtrlType);
+
+		[DllImport("kernel32.dll")]
+		static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate HandlerRoutine, bool Add);
+
+
+		[DllImport("kernel32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool GenerateConsoleCtrlEvent(int dwCtrlEvent, uint dwProcessGroupId);
+
 		private void Window_Closing(object sender, CancelEventArgs e)
 		{
 			KillAllProcesses();
@@ -985,7 +1021,7 @@ namespace JudgingLauncher
 					bool isRunning = Process.GetProcessesByName("node").Count() > 0;
 					if (isRunning)
 					{
-						KillAllProcesses();
+						KillServerOnly();
 					}
 
 					// Wait for node processes to die
@@ -995,7 +1031,10 @@ namespace JudgingLauncher
 
 					if (isRunning)
 					{
-						Launch();
+						if (IsLanMode)
+						{
+							StartLocalServer();
+						}
 					}
 				}).Start();
 			}
